@@ -1,0 +1,7 @@
+device: cuda
+require_cuda: true
+max_reserved_vram_gib: 10.5
+allow_cpu_offload: false
+stage_text_encoders: true
+attention_backend: sdpa
+sequential_jobs: 1

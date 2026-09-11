@@ -23,7 +23,7 @@ The hardware requirement is interpreted as more than "can start with offload." A
 
 | Model / family | Parameters and resident components | Inference VRAM | Realistic LoRA-training VRAM | Native / useful resolution | Photoreal humans | Identity suitability | Expected 4070S speed | Training complexity | Ecosystem maturity | License | Main compromise |
 |---|---|---:|---:|---|---|---|---|---|---|---|---|
-| **RealVisXL V5.0 / SDXL** **PRIMARY**[^1][^2] | About 3B checkpoint; SDXL also loads dual CLIP encoders and VAE | **7-9 GiB** at 768-1024, batch 1 (*estimate*) | **10-12 GiB** at 768 with frozen encoders, cached latents/text outputs, checkpointing, and 8-bit optimizer (*estimate*); official Diffusers recipe is under 16 GB at 1024[^3] | SDXL native 1024; train v0.1 at 768-area buckets, infer 768-1024 | Strong, especially skin and ordinary photography; better starting point than raw SDXL | Excellent practical ecosystem: LoRA, PhotoMaker, InstantID, IP-Adapter, PuLID | Moderate: roughly 6-12 s/image at 25-35 steps (*estimate*) | Low-medium; stable recipes and many diagnostics | Very mature | OpenRAIL++ | Slower/larger than SD1.5; LoRA is tied to the pinned base/fine-tune and may not transfer cleanly to another SDXL checkpoint |
+| **RealVisXL V5.0 / SDXL** **PRIMARY**[^1][^2] | About 3B checkpoint; SDXL also loads dual CLIP encoders and VAE | **9.06 GiB reserved / 7.12 GiB allocated**, measured at 640 x 832, batch 1; staged 768 x 1024 reached 10.80 GiB reserved | **10-12 GiB** at 768 with frozen encoders, cached latents/text outputs, checkpointing, and 8-bit optimizer (*estimate*); official Diffusers recipe is under 16 GB at 1024[^3] | SDXL native 1024; train v0.1 at 768-area buckets, infer at the measured-safe 640 x 832 | Strong, especially skin and ordinary photography; better starting point than raw SDXL | Excellent practical ecosystem: LoRA, PhotoMaker, InstantID, IP-Adapter, PuLID | **4.34-4.81 s/image**, measured at 30 steps and 640 x 832 | Low-medium; stable recipes and many diagnostics | Very mature | OpenRAIL++ | Slower/larger than SD1.5; LoRA is tied to the pinned base/fine-tune and may not transfer cleanly to another SDXL checkpoint |
 | **FLUX.2 Klein 4B Base + 4B distilled** **CHALLENGER**[^7][^8] | 4B generator plus Qwen3-family text encoder; headline count understates resident pipeline | Base reported at **9.2-13 GB**; distilled 8.4 GB vendor figure; int8 can be around 8 GB[^7][^9] | Vendor minimum **12 GB**; standard LoRA commonly under 24 GB, with 12 GB requiring quantization and a carefully optimized trainer[^8][^9][^10] | 1024-class; supports text-to-image and single/multi-reference editing | Potentially strongest raw fidelity and prompt following in this shortlist | Excellent architecture fit: native multi-reference editing and base model intended for LoRA | Base likely 25-60 s/image; distilled roughly 2-6 s/image (*4070S estimates*) | Medium-high on 12 GiB; newer stack, quantization choices matter | Growing rapidly, less battle-tested than SDXL | Apache 2.0 for 4B Base and distilled | Best long-term option may still be operationally marginal today; a failed 12 GiB run would waste the first experiment on systems work |
 | **Stable Diffusion 3.5 Medium**[^11][^12] | About 2.5B MMDiT plus three text encoders, including T5-XXL | Full pipeline exceeds the comfortable envelope; quantized/offloaded modes fit roughly **8-12 GiB** | Roughly **10-12 GiB** only with NF4, 512 px, batch 1, and aggressive savings; 16+ GiB is more realistic[^12] | 1024 native; low-memory training guidance falls to 512 | Good prompt adherence and respectable humans, but not a decisive gain here | Fewer mature identity tools and character recipes than SDXL | Moderate (*estimate*) | High; text-encoder footprint and schedule sensitivity add risk | Medium | Stability Community License; free under its stated annual-revenue threshold | Requires compromises at exactly the point v0.1 needs dependable training; license is less permissive than Apache 2.0 |
 | **SANA 1.5 1.6B**[^13][^14] | 1.6B diffusion transformer plus Gemma 2 text encoder | Officially about **12 GB** in BF16 and under 8 GB at 4-bit[^13] | Official guidance is approximately **32 GB**; current trainer guidance treats 24 GB as practical[^14] | 1024; efficient 32x latent compression | Good for its size and fast; less proven for close recurring faces | LoRA exists, but personalization ecosystem and evidence are thin | Fast inference; exact 4070S figure requires measurement | High on this GPU | Early-medium | Apache 2.0 model; Gemma terms also apply to its text encoder | Small denoiser does not translate into small end-to-end training memory |
@@ -170,22 +170,29 @@ Before generating Mara, commit:
 - the human-review rubric;
 - the policy that all people are fictional adults and v0.1 contains no nudity.
 
-Assume one RTX 4070 Super 12 GiB, at least 32 GB system RAM, 50 GB free local storage, Python 3.11, and one sequential GPU process. Start on native Windows with PyTorch SDPA to minimize setup. Use WSL2 only if a pinned trainer dependency proves incompatible; host choice must not leak into character or shot schemas.
+Assume one RTX 4070 Super 12 GiB, at least 32 GB system RAM, 50 GB free local storage, Python 3.12, and one sequential GPU process. Start on native Windows with PyTorch SDPA to minimize setup. Use WSL2 only if a pinned trainer dependency proves incompatible; host choice must not leak into character or shot schemas.
 
 ### 1. Generate candidate identities
 
-Generate **64 images**, one image per seed, with RealVisXL V5.0 at 768 x 1024, 30 steps, DPM++ SDE Karras, CFG 6.0, and seeds `11000` through `11063`. Use a neutral prompt whose fixed content is:
+Generate **64 images**, one image per seed, with RealVisXL V5.0 at the measured-safe 640 x 832 resolution, 30 steps, DPM++ SDE Karras, CFG 6.0, and seeds `11000` through `11063`. Use a neutral prompt template whose fixed content is:
 
 ```text
-an unretouched ordinary smartphone portrait of a fictional adult woman around age 30,
-chest-up, looking toward the camera, neutral expression, everyday dark crew-neck shirt,
-plain apartment wall, soft indirect window light, natural pores and slight facial asymmetry,
-realistic exposure, no beauty retouching
+unretouched smartphone portrait of {identity}, chest-up, looking at camera, neutral
+expression, dark crew-neck shirt, plain apartment wall, indirect window light,
+natural skin texture, realistic exposure
 ```
 
-The negative prompt should reject minors, celebrity resemblance, multiple people, plastic/airbrushed skin, CGI/illustration, extreme makeup, text/watermarks, and malformed facial anatomy. Do not specify a celebrity, famous character, or real individual. Do not constrain ethnicity or permanent facial traits unless the product owner freezes those requirements before generation.
+The negative prompt should reject minors, celebrity resemblance, multiple people, plastic/airbrushed skin, CGI/illustration, extreme makeup, text/watermarks, and malformed facial anatomy. Do not specify a celebrity, famous character, or real individual. The first unconstrained smoke test converged too strongly on one facial type, so `{identity}` rotates through eight frozen descriptions spanning skin tone, face structure, and hair. These descriptions widen the candidate search and do not define Mara; the human-selected image defines her initial canon. The exact variants live in the versioned experiment config.
 
 Automatically reject unreadable files, zero or multiple detected faces, a face occupying less than 18% of image area, and severe blur. Produce a static contact sheet labeled only with candidate IDs. Human selection chooses one master and one backup based on ordinary distinctiveness, clearly adult appearance, visible facial geometry, plausible skin, mild asymmetry, and absence of artifacts. Record the chosen image's complete lineage; the name "Mara" is assigned only after selection.
+
+#### Measured implementation gate (2026-09-11)
+
+- Host: NVIDIA GeForce RTX 4070 SUPER, 11.99 GiB VRAM, CUDA 12.8, PyTorch 2.11.0, native Windows.
+- Weights: `RealVisXL_V5.0_fp16.safetensors`, SHA-256 `6a35a7855770ae9820a3c931d4964c3817b6d9e3c6f9c4dabb5b3a94e5643b80`, pinned repository revision `ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc`.
+- A staged 768 x 1024 smoke image reached 10.80 GiB reserved and failed the 10.5 GiB soft gate. At 640 x 832, 64/64 images completed with 7.12 GiB peak allocated and 9.06 GiB peak reserved.
+- End-to-end time was 5 minutes 22 seconds, including setup; generation averaged 4.51 seconds per image.
+- Candidate `candidate-0037-seed-11036` was regenerated from its manifest and matched the original PNG SHA-256 byte for byte.
 
 ### 2. Expand references without identity recursion
 

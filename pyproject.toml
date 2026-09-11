@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mara-lab"
+version = "0.1.0"
+description = "Headless, reproducible synthetic photography experiments."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "pillow>=11.0,<13",
+  "pydantic>=2.10,<3",
+  "pyyaml>=6.0,<7",
+  "rich>=13.9,<15",
+  "typer>=0.15,<1",
+]
+
+[project.optional-dependencies]
+gpu = [
+  "accelerate>=1.0,<2",
+  "diffusers>=0.35,<0.40",
+  "hf-xet>=1.1,<2",
+  "huggingface-hub>=0.34,<1",
+  "safetensors>=0.5,<1",
+  "torch>=2.7,<3",
+  "transformers>=4.49,<5",
+  "truststore>=0.10,<1",
+]
+
+[project.scripts]
+mara-lab = "mara_lab.cli:app"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<8",
+  "ruff>=0.11,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mara_lab"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
