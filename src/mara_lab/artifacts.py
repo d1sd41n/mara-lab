@@ -64,8 +64,30 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
 def save_png_atomic(image: Image.Image, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.stem}.tmp{path.suffix}")
-    image.save(temporary, format="PNG", optimize=False)
-    os.replace(temporary, path)
+    try:
+        image.save(temporary, format="PNG", optimize=False)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def source_tree_snapshot() -> dict[str, Any]:
+    package_root = Path(__file__).resolve().parent
+    source_files = sorted(package_root.rglob("*.py"), key=lambda path: path.as_posix())
+    digest = hashlib.sha256()
+    for source_file in source_files:
+        relative_path = source_file.relative_to(package_root).as_posix().encode("utf-8")
+        digest.update(relative_path)
+        digest.update(b"\0")
+        with source_file.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        digest.update(b"\0")
+    return {
+        "package_root": package_root.as_posix(),
+        "file_count": len(source_files),
+        "sha256": digest.hexdigest(),
+    }
 
 
 def environment_snapshot(
@@ -87,6 +109,7 @@ def environment_snapshot(
     return {
         "captured_at": utc_now(),
         "lockfile": lockfile_record,
+        "source_tree": source_tree_snapshot(),
         "platform": platform.platform(),
         "python": platform.python_version(),
         "python_executable": sys.executable,

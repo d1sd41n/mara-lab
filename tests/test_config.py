@@ -8,7 +8,9 @@ from mara_lab.config import (
     GenerationSettings,
     ModelProfile,
     SeedRange,
+    load_benchmark_experiment_config,
     load_experiment_config,
+    load_training_experiment_config,
 )
 
 ROOT = Path(__file__).parents[1]
@@ -26,6 +28,7 @@ def test_loads_versioned_candidate_experiment() -> None:
         == "6a35a7855770ae9820a3c931d4964c3817b6d9e3c6f9c4dabb5b3a94e5643b80"
     )
     assert config.model.dtype == "float16"
+    assert config.model.materialized_max_shard_mib == 128
     assert config.compute.max_reserved_vram_gib == 10.5
     assert config.compute.stage_text_encoders is True
     assert (config.generation.width, config.generation.height) == (640, 832)
@@ -67,3 +70,27 @@ def test_rejects_unimplemented_or_unsafe_model_options() -> None:
             revision="pinned-revision",
             trust_remote_code=True,
         )
+
+
+def test_loads_pinned_training_profile() -> None:
+    config = load_training_experiment_config(
+        ROOT / "configs" / "training" / "mara-lora-smoke-v001.yaml"
+    )
+
+    assert config.adapter_id == "mara-v001-sdxl-lora"
+    assert config.trainer.revision == "4e624302e0088e39933b31cbc71f24212e900f5f"
+    assert config.trainer.network_dim == 16
+    assert config.trainer.full_bf16 is True
+    assert config.trainer.cpu_offload is False
+    assert config.expected_train_images == 28
+    assert config.expected_validation_images == 6
+
+
+def test_loads_fixed_lora_sentinel_matrix() -> None:
+    config = load_benchmark_experiment_config(
+        ROOT / "configs" / "benchmarks" / "mara-lora-sentinels-v001.yaml"
+    )
+
+    assert config.identity_token == "mara_v01"
+    assert len(config.cases) == 4
+    assert [case.seed for case in config.cases] == [41001, 41002, 41003, 41004]

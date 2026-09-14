@@ -1,0 +1,46 @@
+schema_version: 1
+experiment_id: mara-lora-sentinels-v001
+character_id: mara
+identity_token: mara_v01
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 5.0
+cases:
+  - case_id: bedroom-morning
+    seed: 41001
+    prompt: >-
+      unretouched close phone selfie of mara_v01, an adult woman, neutral expression,
+      in a simple bedroom, soft morning window light, ordinary gray shirt, natural skin,
+      imperfect handheld framing and realistic exposure
+  - case_id: bathroom-fluorescent
+    seed: 41002
+    prompt: >-
+      unretouched close phone selfie of mara_v01, an adult woman, soft closed-mouth smile,
+      in a plain bathroom, overhead fluorescent light, muted blue shirt, natural skin,
+      cool white balance and mild sensor noise
+  - case_id: outdoor-overcast
+    seed: 41003
+    prompt: >-
+      unretouched chest-up phone photo of mara_v01, an adult woman, left three-quarter view,
+      neutral expression, beside a plain exterior wall in overcast daylight, dark navy shirt,
+      natural skin and ordinary auto exposure
+  - case_id: kitchen-tungsten
+    seed: 41004
+    prompt: >-
+      unretouched medium phone photo of mara_v01, an adult woman, relaxed expression,
+      in a simple kitchen, warm tungsten light, forest-green shirt, natural skin,
+      imperfect white balance and mild low-light noise
+negative_prompt: >-
+  child, teenager, minor, celebrity, famous person, multiple people, duplicate person,
+  collage, diptych, split screen, rotated image, sideways person, plastic skin,
+  airbrushed skin, beauty filter, CGI, illustration, extreme makeup, text, watermark,
+  malformed face, asymmetric eyes, deformed eyes, deformed mouth, extra limbs
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 4
+  contact_sheet_thumbnail_width: 220

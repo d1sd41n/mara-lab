@@ -23,3 +23,5 @@ def test_atomic_json_and_append_only_manifest(tmp_path: Path) -> None:
 
     environment = environment_snapshot([], lockfile=document)
     assert environment["lockfile"]["sha256"] == sha256_file(document)
+    assert environment["source_tree"]["file_count"] > 0
+    assert len(environment["source_tree"]["sha256"]) == 64

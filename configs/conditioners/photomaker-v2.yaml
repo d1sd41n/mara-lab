@@ -1,0 +1,15 @@
+backend: photomaker_v2
+model_id: TencentARC/PhotoMaker-V2
+revision: f5a1e5155dc02166253fa7e29d13519f5ba22eac
+weight_file: photomaker-v2.bin
+weight_sha256: 0eeac57d7e09b95cee670a18e0d939ff303dd6f76d317c950bf584c6c9bdb8f5
+source_repository: https://github.com/TencentARC/PhotoMaker.git
+source_revision: 060b4fcb10b76a4554edf565d6106b7e36c968f0
+trigger_word: img
+version: v2
+insightface_model: buffalo_l
+insightface_provider: CPUExecutionProvider
+cache_dir: .cache/huggingface
+insightface_cache_dir: .cache/insightface
+offload_cache_dir: .cache/offload
+execution_mode: auto

@@ -1,0 +1,85 @@
+schema_version: 1
+experiment_id: mara-references-pass-a-v001
+character_id: mara
+pass_id: a
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+conditioner_profile: ../conditioners/photomaker-v2.yaml
+reference_images:
+  - ../../characters/mara/canonical/v001/master.png
+maximum_reference_images: 1
+prompt_template_version: v1
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 5.0
+  start_merge_step: 10
+  seeds:
+    start: 31000
+    count: 8
+cells:
+  - cell_id: a1
+    view: frontal view
+    expression: neutral expression
+    lighting: indirect window light
+    setting: a plain apartment interior
+    wardrobe: a dark crew-neck shirt
+    framing: close chest-up
+    capture_style: modern phone
+    camera_behavior: natural auto exposure and restrained processing
+  - cell_id: a2
+    view: frontal view
+    expression: soft closed-mouth smile
+    lighting: overcast outdoor light
+    setting: a plain exterior wall
+    wardrobe: a muted blue crew-neck shirt
+    framing: close chest-up
+    capture_style: modern phone
+    camera_behavior: natural auto exposure and restrained HDR
+  - cell_id: a3
+    view: left three-quarter view
+    expression: neutral expression
+    lighting: indirect window light
+    setting: a plain apartment interior
+    wardrobe: a charcoal crew-neck shirt
+    framing: close chest-up
+    capture_style: modern phone
+    camera_behavior: natural auto exposure and restrained processing
+  - cell_id: a4
+    view: right three-quarter view
+    expression: neutral expression
+    lighting: indirect window light
+    setting: a plain apartment interior
+    wardrobe: a forest-green crew-neck shirt
+    framing: close chest-up
+    capture_style: modern phone
+    camera_behavior: natural auto exposure and restrained processing
+  - cell_id: a5
+    view: left near-profile view
+    expression: relaxed expression
+    lighting: soft indoor practical light
+    setting: a plain apartment interior
+    wardrobe: a burgundy crew-neck shirt
+    framing: close chest-up
+    capture_style: modern phone
+    camera_behavior: realistic white balance and mild sensor noise
+  - cell_id: a6
+    view: right near-profile view
+    expression: relaxed expression
+    lighting: open shade
+    setting: a plain exterior wall
+    wardrobe: a dark navy crew-neck shirt
+    framing: close chest-up
+    capture_style: modern phone
+    camera_behavior: natural auto exposure and restrained processing
+negative_prompt: >-
+  child, teenager, minor, celebrity, famous person, multiple people, duplicate person,
+  collage, diptych, split screen, rotated image, sideways person, plastic skin,
+  airbrushed skin, beauty filter, CGI, illustration, extreme makeup, text, watermark,
+  malformed face, asymmetric eyes, deformed eyes, deformed mouth, extra limbs
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 8
+  contact_sheet_thumbnail_width: 180

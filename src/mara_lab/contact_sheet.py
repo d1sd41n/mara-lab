@@ -1,27 +1,38 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable, Sequence
 from pathlib import Path
+from typing import Protocol
 
 from PIL import Image, ImageDraw
 
 from mara_lab.artifacts import save_png_atomic
-from mara_lab.manifests import CandidateRecord
+
+
+class ContactSheetRecord(Protocol):
+    artifact_id: str
+    sequence: int
+    seed: int
+    width: int
+    height: int
+    image_path: str
 
 
 def create_contact_sheet(
     run_dir: Path,
-    records: list[CandidateRecord],
+    records: Sequence[ContactSheetRecord],
     destination: Path,
     columns: int,
     thumbnail_width: int,
+    labeler: Callable[[ContactSheetRecord], str] | None = None,
 ) -> None:
     if not records:
         return
 
     margin = 12
     label_height = 28
-    thumbnails: list[tuple[CandidateRecord, Image.Image]] = []
+    thumbnails: list[tuple[ContactSheetRecord, Image.Image]] = []
     max_thumbnail_height = 0
     for record in records:
         source = run_dir / Path(record.image_path)
@@ -46,9 +57,14 @@ def create_contact_sheet(
         x = margin + column * cell_width
         y = margin + row * cell_height
         sheet.paste(thumbnail, (x, y))
+        label = (
+            labeler(record)
+            if labeler is not None
+            else f"#{record.sequence:04d}  seed={record.seed}"
+        )
         draw.text(
             (x, y + max_thumbnail_height + 6),
-            f"#{record.sequence:04d}  seed={record.seed}",
+            label,
             fill=(20, 20, 20),
         )
 

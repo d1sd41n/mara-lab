@@ -47,3 +47,33 @@ class BackendInfo:
 class GenerationResult:
     image: Image.Image
     metrics: RuntimeMetrics
+
+
+@dataclass(frozen=True, slots=True)
+class ReferenceShot:
+    cell_id: str
+    view: str
+    expression: str
+    lighting: str
+    setting: str
+    wardrobe: str
+    framing: str
+    capture_style: str
+    camera_behavior: str
+
+
+@dataclass(frozen=True, slots=True)
+class ReferenceGenerationRequest:
+    shot: ReferenceShot
+    seed: int
+    width: int
+    height: int
+    steps: int
+    guidance_scale: float
+    start_merge_step: int
+
+
+@dataclass(frozen=True, slots=True)
+class CompiledPrompt:
+    positive: str
+    negative: str

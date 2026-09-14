@@ -20,3 +20,11 @@ class PromptTooLongError(MaraLabError):
 
 class ReproductionMismatchError(MaraLabError):
     """Raised when a pinned-host reproduction is not byte-identical."""
+
+
+class ModelMaterializationError(MaraLabError):
+    """Raised when a local model snapshot cannot be prepared safely."""
+
+
+class TrainingError(MaraLabError):
+    """Raised when a character adapter cannot be prepared or trained safely."""

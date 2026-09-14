@@ -1,0 +1,194 @@
+schema_version: 1
+experiment_id: mara-dataset-candidates-v001
+character_id: mara
+pass_id: c
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+conditioner_profile: ../conditioners/photomaker-v2.yaml
+reference_images:
+  - ../../characters/mara/canonical/v001/master.png
+minimum_reference_images: 7
+maximum_reference_images: 7
+prompt_template_version: v2
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 5.0
+  start_merge_step: 10
+  seeds:
+    start: 33000
+    count: 4
+cells:
+  - cell_id: c1
+    view: frontal view
+    expression: neutral expression
+    lighting: soft bedroom morning light
+    setting: a simple bedroom
+    wardrobe: a heather-gray crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: handheld framing and natural auto exposure
+  - cell_id: c2
+    view: frontal view
+    expression: soft closed-mouth smile
+    lighting: overhead bathroom fluorescent light
+    setting: a plain bathroom
+    wardrobe: a muted blue crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: cool white balance and mild sensor noise
+  - cell_id: c3
+    view: left three-quarter view
+    expression: neutral expression
+    lighting: indirect parked-car daylight
+    setting: a parked compact car
+    wardrobe: a charcoal crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: imperfect arm-length framing and restrained HDR
+  - cell_id: c4
+    view: right three-quarter view
+    expression: relaxed expression
+    lighting: warm kitchen tungsten light
+    setting: a simple kitchen
+    wardrobe: a burgundy crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: warm white balance and mild sensor noise
+  - cell_id: c5
+    view: left near-profile view
+    expression: serious expression
+    lighting: soft overcast daylight
+    setting: a quiet residential street
+    wardrobe: a dark navy crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: slightly imperfect framing and natural exposure
+  - cell_id: c6
+    view: right three-quarter view
+    expression: neutral expression
+    lighting: dim monitor light
+    setting: a plain home workspace
+    wardrobe: a dark green crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: visible low-light noise and imperfect white balance
+  - cell_id: c7
+    view: frontal view
+    expression: neutral expression
+    lighting: flat office fluorescent light
+    setting: a modest office
+    wardrobe: a muted gray button-up shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: ordinary auto exposure and cool white balance
+  - cell_id: c8
+    view: left three-quarter view
+    expression: slight squint
+    lighting: hard noon sunlight
+    setting: a plain exterior wall
+    wardrobe: a faded blue crew-neck shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: clipped highlights and hard natural shadows
+  - cell_id: c9
+    view: right three-quarter view
+    expression: neutral expression
+    lighting: mixed evening street light
+    setting: a quiet sidewalk
+    wardrobe: a black crew-neck shirt
+    framing: chest-up
+    capture_style: modern phone
+    camera_behavior: visible sensor noise and mixed white balance
+  - cell_id: c10
+    view: frontal view
+    expression: serious expression
+    lighting: overhead elevator light
+    setting: a plain elevator
+    wardrobe: a forest-green crew-neck shirt
+    framing: chest-up
+    capture_style: modern phone
+    camera_behavior: flat exposure and mildly awkward framing
+  - cell_id: c11
+    view: left three-quarter view
+    expression: natural smile
+    lighting: side cafe window light
+    setting: a modest cafe
+    wardrobe: a muted red crew-neck shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: natural auto exposure and shallow phone depth of field
+  - cell_id: c12
+    view: right three-quarter view
+    expression: relaxed expression
+    lighting: direct compact-camera flash
+    setting: a plain apartment interior
+    wardrobe: a slate-gray crew-neck shirt
+    framing: chest-up
+    capture_style: compact digital camera
+    camera_behavior: hard flash shadow and slight JPEG artifacts
+  - cell_id: c13
+    view: frontal view
+    expression: clear natural smile
+    lighting: indirect apartment window light
+    setting: a simple living room
+    wardrobe: a muted teal crew-neck shirt
+    framing: medium portrait
+    capture_style: casual phone
+    camera_behavior: restrained HDR and natural handheld framing
+  - cell_id: c14
+    view: left near-profile view
+    expression: neutral expression
+    lighting: warm hallway practical light
+    setting: a plain apartment hallway
+    wardrobe: a dark plum crew-neck shirt
+    framing: medium portrait
+    capture_style: early digital camera
+    camera_behavior: warm color cast and slight softness
+  - cell_id: c15
+    view: left three-quarter view
+    expression: neutral expression
+    lighting: soft bedroom morning light
+    setting: a simple bedroom
+    wardrobe: a charcoal long-sleeve shirt
+    framing: three-quarter body
+    capture_style: casual phone
+    camera_behavior: imperfect composition and natural exposure
+  - cell_id: c16
+    view: right three-quarter view
+    expression: soft smile
+    lighting: open overcast daylight
+    setting: a quiet residential street
+    wardrobe: a muted blue casual jacket
+    framing: three-quarter body
+    capture_style: casual phone
+    camera_behavior: ordinary handheld framing and restrained processing
+  - cell_id: c17
+    view: frontal view
+    expression: relaxed expression
+    lighting: warm kitchen tungsten light
+    setting: a simple kitchen
+    wardrobe: a forest-green long-sleeve shirt
+    framing: three-quarter body
+    capture_style: early digital camera
+    camera_behavior: mild motion softness and warm white balance
+  - cell_id: c18
+    view: right near-profile view
+    expression: serious expression
+    lighting: direct compact-camera flash
+    setting: a plain apartment hallway
+    wardrobe: a dark navy casual jacket
+    framing: three-quarter body
+    capture_style: compact digital camera
+    camera_behavior: off-center framing, hard flash shadow, and slight JPEG artifacts
+negative_prompt: >-
+  child, teenager, minor, celebrity, famous person, multiple people, duplicate person,
+  collage, diptych, split screen, rotated image, sideways person, plastic skin,
+  airbrushed skin, beauty filter, CGI, illustration, extreme makeup, text, watermark,
+  malformed face, asymmetric eyes, deformed eyes, deformed mouth, extra limbs
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 8
+  contact_sheet_thumbnail_width: 180

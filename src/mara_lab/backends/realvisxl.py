@@ -18,9 +18,18 @@ from mara_lab.errors import BackendUnavailableError, PromptTooLongError
 
 
 class RealVisXLBackend(ImageBackend):
-    def __init__(self, model: ModelProfile, compute: ComputeProfile) -> None:
+    def __init__(
+        self,
+        model: ModelProfile,
+        compute: ComputeProfile,
+        *,
+        adapter_path: Path | None = None,
+        adapter_weight: float = 1.0,
+    ) -> None:
         self._model = model
         self._compute = compute
+        self._adapter_path = adapter_path.resolve() if adapter_path is not None else None
+        self._adapter_weight = adapter_weight
         self._pipe: Any = None
         self._torch: Any = None
         self._info: BackendInfo | None = None
@@ -157,6 +166,26 @@ class RealVisXLBackend(ImageBackend):
             )
             if self._model.vae_tiling:
                 pipe.vae.enable_tiling()
+            adapter_details: dict[str, Any] | None = None
+            if self._adapter_path is not None:
+                if not self._adapter_path.is_file():
+                    raise BackendUnavailableError(
+                        f"character adapter does not exist: {self._adapter_path}"
+                    )
+                if not 0 < self._adapter_weight <= 2:
+                    raise BackendUnavailableError("adapter weight must be above 0 and at most 2")
+                adapter_sha256 = sha256_file(self._adapter_path)
+                pipe.load_lora_weights(
+                    str(self._adapter_path.parent),
+                    weight_name=self._adapter_path.name,
+                    adapter_name="character",
+                )
+                pipe.set_adapters(["character"], adapter_weights=[self._adapter_weight])
+                adapter_details = {
+                    "path": self._adapter_path.as_posix(),
+                    "sha256": adapter_sha256,
+                    "weight": self._adapter_weight,
+                }
             pipe.set_progress_bar_config(disable=True)
             pipe.to(self._compute.device)
         except Exception as exc:
@@ -190,6 +219,7 @@ class RealVisXLBackend(ImageBackend):
             "attention_backend": self._compute.attention_backend,
             "selected_weight_file": self._model.weight_file,
             "selected_weight_sha256": actual_weight_sha256,
+            "character_adapter": adapter_details,
         }
         self._info = BackendInfo(
             backend="realvisxl",

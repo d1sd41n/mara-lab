@@ -13,6 +13,7 @@ dependencies = [
   "pydantic>=2.10,<3",
   "pyyaml>=6.0,<7",
   "rich>=13.9,<15",
+  "tomli-w>=1.2,<2",
   "typer>=0.15,<1",
 ]
 
@@ -22,8 +23,27 @@ gpu = [
   "diffusers>=0.35,<0.40",
   "hf-xet>=1.1,<2",
   "huggingface-hub>=0.34,<1",
+  "peft>=0.17,<1",
   "safetensors>=0.5,<1",
   "torch>=2.7,<3",
+  "transformers>=4.49,<5",
+  "truststore>=0.10,<1",
+]
+reference = [
+  "accelerate>=1.0,<2",
+  "diffusers>=0.35,<0.40",
+  "einops>=0.8,<1",
+  "hf-xet>=1.1,<2",
+  "huggingface-hub>=0.34,<1",
+  "insightface==0.7.3",
+  "omegaconf>=2.3,<3",
+  "onnxruntime>=1.22,<2",
+  "opencv-python-headless>=4.11,<5",
+  "peft>=0.17,<1",
+  "photomaker @ git+https://github.com/TencentARC/PhotoMaker.git@060b4fcb10b76a4554edf565d6106b7e36c968f0",
+  "safetensors>=0.5,<1",
+  "torch>=2.7,<3",
+  "torchvision>=0.22,<1",
   "transformers>=4.49,<5",
   "truststore>=0.10,<1",
 ]
@@ -41,6 +61,9 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/mara_lab"]
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
@@ -54,6 +77,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
 
 [[tool.uv.index]]
 name = "pytorch-cu128"

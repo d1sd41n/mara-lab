@@ -9,11 +9,30 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from mara_lab.config import BackendName, load_experiment_config
+from mara_lab.config import (
+    BackendName,
+    ReferenceBackendName,
+    load_benchmark_experiment_config,
+    load_experiment_config,
+    load_model_profile,
+    load_reference_experiment_config,
+    load_training_experiment_config,
+)
 from mara_lab.errors import MaraLabError
+from mara_lab.trainers.sd_scripts import prepare_sd_scripts_trainer
+from mara_lab.workflows.approve_references import (
+    approve_reference_set,
+    finalize_reference_set,
+    load_reference_set_images,
+)
+from mara_lab.workflows.benchmark import run_benchmark
 from mara_lab.workflows.candidates import run_candidates
+from mara_lab.workflows.dataset import build_character_dataset
+from mara_lab.workflows.prepare_model import prepare_diffusers_model
+from mara_lab.workflows.references import run_references
 from mara_lab.workflows.reproduce import reproduce_candidate
 from mara_lab.workflows.select import select_canon
+from mara_lab.workflows.train import run_training
 
 app = typer.Typer(
     name="mara-lab",
@@ -21,6 +40,28 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+
+
+@app.command("prepare-model")
+def prepare_model(
+    config: Annotated[
+        Path,
+        typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
+    ] = Path("configs/models/realvisxl-v5.yaml"),
+    local_files_only: Annotated[bool, typer.Option("--local-files-only")] = False,
+) -> None:
+    """Build a low-memory, sharded FP16 Diffusers snapshot."""
+    try:
+        summary = prepare_diffusers_model(
+            load_model_profile(config), local_files_only=local_files_only
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"Prepared [bold]{summary.shard_count}[/bold] model shard(s).")
+    console.print(f"Model: {summary.output_dir}")
+    console.print(f"Manifest: {summary.manifest_path}")
 
 
 @app.command()
@@ -104,6 +145,221 @@ def candidates(
         raise typer.Exit(code=1) from exc
 
     console.print(f"Generated [bold]{summary.generated_count}[/bold] candidate(s).")
+    console.print(f"Run: {summary.run_dir}")
+    console.print(f"Contact sheet: {summary.contact_sheet_path}")
+    console.print(f"Peak reserved VRAM: {summary.max_reserved_vram_gib:.2f} GiB")
+
+
+@app.command()
+def references(
+    config: Annotated[
+        Path,
+        typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
+    ] = Path("configs/experiments/mara-references-pass-a-v001.yaml"),
+    limit: Annotated[int | None, typer.Option(min=1)] = None,
+    backend: Annotated[ReferenceBackendName | None, typer.Option()] = None,
+    reference_set: Annotated[
+        Path | None,
+        typer.Option("--reference-set", exists=True, dir_okay=False, readable=True),
+    ] = None,
+    run_id: Annotated[str | None, typer.Option()] = None,
+    resume: Annotated[bool, typer.Option("--resume")] = False,
+) -> None:
+    """Expand canonical references with a pinned identity conditioner."""
+    try:
+        resolved = load_reference_experiment_config(config)
+        overrides: dict[str, object] = {}
+        if backend is not None:
+            overrides["backend"] = backend.value
+            resolved = resolved.model_copy(
+                update={
+                    "conditioner": resolved.conditioner.model_copy(update={"backend": backend}),
+                }
+            )
+        if reference_set is not None:
+            overrides["reference_set"] = reference_set.as_posix()
+            resolved = resolved.model_copy(
+                update={
+                    "reference_images": load_reference_set_images(
+                        reference_set, character_id=resolved.character_id
+                    )
+                }
+            )
+        if resume:
+            overrides["resume"] = True
+        resolved = resolved.model_copy(update={"cli_overrides": overrides})
+        summary = run_references(
+            resolved,
+            image_limit=limit,
+            run_id=run_id,
+            resume=resume,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"Generated [bold]{summary.generated_count}[/bold] reference candidate(s).")
+    console.print(f"Run: {summary.run_dir}")
+    console.print(f"Contact sheet: {summary.contact_sheet_path}")
+    console.print(f"Peak reserved VRAM: {summary.max_reserved_vram_gib:.2f} GiB")
+
+
+@app.command("approve-references")
+def approve_references(
+    run: Annotated[Path, typer.Option("--run", exists=True, file_okay=False)],
+    artifact_id: Annotated[list[str] | None, typer.Option("--artifact-id")] = None,
+    characters_root: Annotated[Path, typer.Option("--characters-root")] = Path("characters"),
+    reference_set_id: Annotated[str, typer.Option("--reference-set-id")] = "pass-a-v001",
+) -> None:
+    """Freeze two to four human-approved Pass A views for Pass B."""
+    try:
+        summary = approve_reference_set(
+            run,
+            artifact_id or [],
+            characters_root=characters_root,
+            reference_set_id=reference_set_id,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"Approved [bold]{len(summary.image_paths) - 1}[/bold] derived view(s).")
+    console.print(f"Reference set: {summary.reference_set_dir}")
+    console.print(f"Descriptor: {summary.descriptor_path}")
+
+
+@app.command("finalize-references")
+def finalize_references(
+    base_reference_set: Annotated[
+        Path,
+        typer.Option("--base-reference-set", exists=True, dir_okay=False, readable=True),
+    ],
+    run: Annotated[Path, typer.Option("--run", exists=True, file_okay=False)],
+    artifact_id: Annotated[list[str] | None, typer.Option("--artifact-id")] = None,
+    characters_root: Annotated[Path, typer.Option("--characters-root")] = Path("characters"),
+    reference_set_id: Annotated[str, typer.Option("--reference-set-id")] = "canonical-v001",
+) -> None:
+    """Freeze seven human-approved references for dataset expansion."""
+    try:
+        summary = finalize_reference_set(
+            base_reference_set,
+            run,
+            artifact_id or [],
+            characters_root=characters_root,
+            reference_set_id=reference_set_id,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"Finalized [bold]{len(summary.image_paths)}[/bold] canonical references.")
+    console.print(f"Reference set: {summary.reference_set_dir}")
+    console.print(f"Descriptor: {summary.descriptor_path}")
+
+
+@app.command("build-dataset")
+def build_dataset(
+    run: Annotated[Path, typer.Option("--run", exists=True, file_okay=False)],
+    train: Annotated[list[str] | None, typer.Option("--train")] = None,
+    validation: Annotated[list[str] | None, typer.Option("--validation")] = None,
+    dataset_root: Annotated[Path, typer.Option("--dataset-root")] = Path(
+        "characters/mara/datasets/v001"
+    ),
+    dataset_id: Annotated[str, typer.Option("--dataset-id")] = "mara-v001",
+    token: Annotated[str, typer.Option()] = "mara_v01",
+    expected_train: Annotated[int, typer.Option(min=1)] = 28,
+    expected_validation: Annotated[int, typer.Option(min=0)] = 6,
+) -> None:
+    """Freeze human-selected reference outputs into a captioned dataset."""
+    try:
+        summary = build_character_dataset(
+            run,
+            train or [],
+            validation or [],
+            dataset_root=dataset_root,
+            dataset_id=dataset_id,
+            token=token,
+            expected_train_count=expected_train,
+            expected_validation_count=expected_validation,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Dataset: [bold]{summary.train_count}[/bold] train, "
+        f"[bold]{summary.validation_count}[/bold] validation image(s)."
+    )
+    console.print(f"Root: {summary.dataset_root}")
+    console.print(f"Manifest: {summary.manifest_path}")
+
+
+@app.command("prepare-trainer")
+def prepare_trainer(
+    config: Annotated[
+        Path,
+        typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
+    ] = Path("configs/training/mara-lora-smoke-v001.yaml"),
+) -> None:
+    """Create the isolated, pinned sd-scripts training runtime."""
+    try:
+        resolved = load_training_experiment_config(config)
+        summary = prepare_sd_scripts_trainer(resolved.trainer)
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"Trainer source: {summary.source_dir}")
+    console.print(f"Revision: {summary.source_revision}")
+    console.print(f"Runtime: {summary.runtime_python}")
+
+
+@app.command()
+def train(
+    config: Annotated[
+        Path,
+        typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
+    ] = Path("configs/training/mara-lora-smoke-v001.yaml"),
+    max_steps: Annotated[int | None, typer.Option(min=1)] = None,
+    run_id: Annotated[str | None, typer.Option()] = None,
+) -> None:
+    """Train a traced SDXL character LoRA with the pinned local trainer."""
+    try:
+        resolved = load_training_experiment_config(config)
+        summary = run_training(resolved, max_train_steps=max_steps, run_id=run_id)
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Trained [bold]{len(summary.adapters)}[/bold] adapter checkpoint(s) "
+        f"in {summary.wall_seconds:.1f} s."
+    )
+    console.print(f"Run: {summary.run_dir}")
+    console.print(f"Manifest: {summary.adapter_manifest_path}")
+    console.print(f"Peak reserved VRAM: {summary.max_reserved_vram_gib:.2f} GiB")
+
+
+@app.command()
+def benchmark(
+    adapter: Annotated[Path, typer.Option("--adapter", exists=True, dir_okay=False, readable=True)],
+    config: Annotated[
+        Path,
+        typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
+    ] = Path("configs/benchmarks/mara-lora-sentinels-v001.yaml"),
+    adapter_weight: Annotated[float, typer.Option(min=0.01, max=2.0)] = 1.0,
+    limit: Annotated[int | None, typer.Option(min=1)] = None,
+    run_id: Annotated[str | None, typer.Option()] = None,
+) -> None:
+    """Render fixed sentinel shots from a traced character adapter."""
+    try:
+        resolved = load_benchmark_experiment_config(config)
+        summary = run_benchmark(
+            resolved,
+            adapter,
+            adapter_weight=adapter_weight,
+            case_limit=limit,
+            run_id=run_id,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"Generated [bold]{summary.generated_count}[/bold] benchmark image(s).")
     console.print(f"Run: {summary.run_dir}")
     console.print(f"Contact sheet: {summary.contact_sheet_path}")
     console.print(f"Peak reserved VRAM: {summary.max_reserved_vram_gib:.2f} GiB")
