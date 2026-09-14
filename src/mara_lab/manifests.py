@@ -36,3 +36,46 @@ class RunStatus(StrictModel):
     started_at: str
     finished_at: str | None = None
     error: str | None = None
+
+
+class CanonicalSourceSnapshot(StrictModel):
+    config_path: str
+    config_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    environment_path: str
+    environment_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class CanonicalRecord(StrictModel):
+    schema_version: int = 1
+    canonical_id: str
+    canonical_version: str = Field(pattern=r"^v[0-9]{3}$")
+    character_id: str
+    role: Literal["master", "backup"]
+    image_path: str
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    selected_at: str
+    selection_method: Literal["human"] = "human"
+    source_run_id: str
+    source_snapshot: CanonicalSourceSnapshot
+    source_artifact: CandidateRecord
+
+
+class CharacterPolicy(StrictModel):
+    fictional: bool = True
+    adult: bool = True
+    policy_version: str = "no_nudity_v001"
+
+
+class CanonicalPointers(StrictModel):
+    version: str = Field(pattern=r"^v[0-9]{3}$")
+    master: str
+    backup: str
+    manifest: str
+
+
+class CharacterDefinition(StrictModel):
+    schema_version: int = 1
+    character_id: str
+    display_name: str
+    policy: CharacterPolicy = Field(default_factory=CharacterPolicy)
+    canonical: CanonicalPointers

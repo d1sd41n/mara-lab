@@ -193,6 +193,7 @@ Automatically reject unreadable files, zero or multiple detected faces, a face o
 - A staged 768 x 1024 smoke image reached 10.80 GiB reserved and failed the 10.5 GiB soft gate. At 640 x 832, 64/64 images completed with 7.12 GiB peak allocated and 9.06 GiB peak reserved.
 - End-to-end time was 5 minutes 22 seconds, including setup; generation averaged 4.51 seconds per image.
 - Candidate `candidate-0037-seed-11036` was regenerated from its manifest and matched the original PNG SHA-256 byte for byte.
+- Human review on 2026-09-14 selected `candidate-0063-seed-11062` as the v001 master and `candidate-0055-seed-11054` as its backup. Their exact PNGs and complete source records are archived under `characters/mara/canonical/v001/`.
 
 ### 2. Expand references without identity recursion
 

@@ -1,0 +1,39 @@
+{
+  "backend": {
+    "backend": "realvisxl",
+    "details": {
+      "attention_backend": "sdpa",
+      "cpu_offload": false,
+      "cuda_runtime": "12.8",
+      "gpu_name": "NVIDIA GeForce RTX 4070 SUPER",
+      "gpu_total_vram_gib": 11.9937,
+      "nvidia_driver": "610.74",
+      "scheduler_class": "DPMSolverMultistepScheduler",
+      "selected_weight_file": "RealVisXL_V5.0_fp16.safetensors",
+      "selected_weight_sha256": "6a35a7855770ae9820a3c931d4964c3817b6d9e3c6f9c4dabb5b3a94e5643b80",
+      "text_encoder_staging": true,
+      "torch_version": "2.11.0+cu128"
+    },
+    "device": "cuda",
+    "dtype": "float16",
+    "model_id": "SG161222/RealVisXL_V5.0",
+    "requested_revision": "ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc",
+    "resident_allocated_vram_gib": 6.5671,
+    "resident_reserved_vram_gib": 6.8379,
+    "resolved_revision": "ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc"
+  },
+  "captured_at": "2026-09-11T21:30:25.878323+00:00",
+  "packages": {
+    "accelerate": "1.15.0",
+    "diffusers": "0.39.0",
+    "huggingface-hub": "0.36.2",
+    "mara-lab": "0.1.0",
+    "pillow": "12.3.0",
+    "pydantic": "2.13.5",
+    "pyyaml": "6.0.3",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.6"
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.11"
+}

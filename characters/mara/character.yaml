@@ -1,0 +1,12 @@
+schema_version: 1
+character_id: mara
+display_name: Mara
+policy:
+  fictional: true
+  adult: true
+  policy_version: no_nudity_v001
+canonical:
+  version: v001
+  master: canonical/v001/master.png
+  backup: canonical/v001/backup.png
+  manifest: canonical/v001/manifest.jsonl

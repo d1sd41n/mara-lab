@@ -13,6 +13,7 @@ from mara_lab.config import BackendName, load_experiment_config
 from mara_lab.errors import MaraLabError
 from mara_lab.workflows.candidates import run_candidates
 from mara_lab.workflows.reproduce import reproduce_candidate
+from mara_lab.workflows.select import select_canon
 
 app = typer.Typer(
     name="mara-lab",
@@ -123,3 +124,30 @@ def reproduce(
     result = "exact match" if summary.exact_match else "pixel drift detected"
     console.print(f"Reproduction: {summary.output_path}")
     console.print(f"Result: {result}")
+
+
+@app.command("select")
+def select_character_canon(
+    run: Annotated[Path, typer.Option("--run", exists=True, file_okay=False)],
+    master: Annotated[str, typer.Option("--master")],
+    backup: Annotated[str, typer.Option("--backup")],
+    canon_root: Annotated[Path, typer.Option("--canon-root")] = Path("characters"),
+    version: Annotated[str, typer.Option("--version")] = "v001",
+) -> None:
+    """Archive a human-selected master and backup as the character canon."""
+    try:
+        summary = select_canon(
+            run,
+            master,
+            backup,
+            canon_root=canon_root,
+            canonical_version=version,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    console.print(f"Canon: {summary.character_dir}")
+    console.print(f"Master: {summary.master_artifact_id} -> {summary.master_path}")
+    console.print(f"Backup: {summary.backup_artifact_id} -> {summary.backup_path}")
+    console.print(f"Manifest: {summary.manifest_path}")

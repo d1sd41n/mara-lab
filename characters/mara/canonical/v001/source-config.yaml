@@ -1,0 +1,66 @@
+schema_version: 1
+experiment_id: mara-candidates-v001
+character_id: mara
+model:
+  backend: realvisxl
+  model_id: SG161222/RealVisXL_V5.0
+  revision: ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc
+  resolved_revision: ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc
+  weight_file: RealVisXL_V5.0_fp16.safetensors
+  dtype: float16
+  scheduler: dpmpp_sde_karras
+  cache_dir: .cache\huggingface
+  use_safetensors: true
+  vae_tiling: true
+  trust_remote_code: false
+compute:
+  device: cuda
+  require_cuda: true
+  max_reserved_vram_gib: 10.5
+  allow_cpu_offload: false
+  stage_text_encoders: true
+  attention_backend: sdpa
+  sequential_jobs: 1
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 6.0
+  seeds:
+    start: 11000
+    count: 64
+prompts:
+  positive_template: unretouched smartphone portrait of {identity}, chest-up, looking
+    at camera, neutral expression, dark crew-neck shirt, plain apartment wall, indirect
+    window light, natural skin texture, realistic exposure
+  identity_variants:
+  - a fictional 30-year-old adult woman with medium-brown skin, oval face, high cheekbones,
+    and straight shoulder-length black hair
+  - a fictional 30-year-old adult woman with fair freckled skin, round face, full
+    cheeks, and chin-length wavy dark hair
+  - a fictional 30-year-old adult woman with deep-brown skin, long face, prominent
+    nose, and tightly curled shoulder-length dark hair
+  - a fictional 30-year-old adult woman with light olive skin, square jaw, broad cheekbones,
+    and short textured dark hair
+  - a fictional 30-year-old adult woman with tan skin, heart-shaped face, soft jawline,
+    and long loose dark curls
+  - a fictional 30-year-old adult woman with dark-brown skin, broad face, low cheekbones,
+    and a straight dark bob
+  - a fictional 30-year-old adult woman with pale skin, angular face, deep-set eyes,
+    and medium-length wavy brown hair
+  - a fictional 30-year-old adult woman with medium skin, tapered face, wide-set eyes,
+    and shoulder-length natural curls
+  negative: child, teenager, minor, celebrity, famous person, multiple people, duplicate
+    person, plastic skin, airbrushed skin, beauty filter, CGI, 3d render, illustration,
+    extreme makeup, text, watermark, bad hands, bad anatomy, gross facial distortion,
+    severely mismatched eyes, deformed eyes, deformed mouth
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 8
+  contact_sheet_thumbnail_width: 180
+sources:
+  experiment: configs/experiments/mara-candidates-v001.yaml
+  model: ../models/realvisxl-v5.yaml
+  compute: ../compute/local-4070s.yaml
+cli_overrides: {}
