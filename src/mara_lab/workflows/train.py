@@ -54,6 +54,25 @@ class TrainingRunSummary:
     wall_seconds: float
 
 
+def _training_process_environment(
+    config: ResolvedTrainingExperimentConfig, trainer_source_dir: Path
+) -> dict[str, str]:
+    environment = os.environ.copy()
+    python_path = environment.get("PYTHONPATH")
+    environment["PYTHONPATH"] = str(trainer_source_dir) + (
+        os.pathsep + python_path if python_path else ""
+    )
+    environment["PYTHONUTF8"] = "1"
+    environment["PYTHONIOENCODING"] = "utf-8"
+    environment["HF_HOME"] = str((Path(".cache") / "huggingface-home").resolve())
+    environment["HF_HUB_CACHE"] = str(config.model.cache_dir.resolve())
+    environment["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+    environment["HF_HUB_OFFLINE"] = "1"
+    environment["TRANSFORMERS_OFFLINE"] = "1"
+    environment.setdefault("MPLCONFIGDIR", str((Path(".cache") / "matplotlib").resolve()))
+    return environment
+
+
 def _resolve_dataset_file(root: Path, relative_path: str, label: str) -> Path:
     path = (root / relative_path).resolve()
     try:
@@ -298,24 +317,13 @@ def run_training(
             "runtime_python": trainer.runtime_python.as_posix(),
             "runtime_lock_sha256": sha256_file(trainer.runtime_lock),
             "packages": runtime_versions(trainer.runtime_python),
+            "offline_model_loading": True,
         }
         environment["dataset_manifest_sha256"] = dataset.manifest_sha256
         environment["base_checkpoint_sha256"] = checkpoint_hash
         atomic_write_json(run_dir / "environment.json", environment)
 
-        process_environment = os.environ.copy()
-        python_path = process_environment.get("PYTHONPATH")
-        process_environment["PYTHONPATH"] = str(trainer.source_dir) + (
-            os.pathsep + python_path if python_path else ""
-        )
-        process_environment["PYTHONUTF8"] = "1"
-        process_environment["PYTHONIOENCODING"] = "utf-8"
-        process_environment["HF_HOME"] = str((Path(".cache") / "huggingface-home").resolve())
-        process_environment["HF_HUB_CACHE"] = str(config.model.cache_dir.resolve())
-        process_environment["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-        process_environment.setdefault(
-            "MPLCONFIGDIR", str((Path(".cache") / "matplotlib").resolve())
-        )
+        process_environment = _training_process_environment(config, trainer.source_dir)
         trainer_log = run_dir / "trainer.log"
         with trainer_log.open("w", encoding="utf-8", newline="") as log_handle:
             result = subprocess.run(

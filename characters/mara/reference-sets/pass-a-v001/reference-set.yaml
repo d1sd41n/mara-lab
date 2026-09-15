@@ -1,0 +1,28 @@
+schema_version: 1
+reference_set_id: pass-a-v001
+character_id: mara
+source_run_id: mara-references-pass-a-v001-full
+selection_method: human
+approved_at: '2026-09-15T01:02:58.609669+00:00'
+images:
+- role: master
+  path: master.png
+  sha256: 72450395ccaaafc215fae77cebae6382344503b97ae4a8f55fcfbe126ea1d8b6
+  source_path: C:/Users/Daniel/dev/mara-lab/characters/mara/canonical/v001/master.png
+- role: approved
+  path: approved-01-reference-a3-08-seed-31007.png
+  sha256: 965b68c701aa2d4a90d682b9975457636ec26596c98dcd626564301bf0a58146
+  source_artifact_id: reference-a3-08-seed-31007
+- role: approved
+  path: approved-02-reference-a4-07-seed-31006.png
+  sha256: 6a6c62184b59ccdeb4064fdb82fabf003e2c44d7c34e80c913e58882df5bc1bc
+  source_artifact_id: reference-a4-07-seed-31006
+- role: approved
+  path: approved-03-reference-a5-07-seed-31006.png
+  sha256: ca08dee6e89b93b1c8c08e46ac17e89fa8ee6d91614b3a3389bbc0953d52ee89
+  source_artifact_id: reference-a5-07-seed-31006
+- role: approved
+  path: approved-04-reference-a6-01-seed-31000.png
+  sha256: e439c0df04c0cb1ce4b7835e4cecf5528c035fd14b868e867265a5074e02cd24
+  source_artifact_id: reference-a6-01-seed-31000
+manifest: manifest.jsonl

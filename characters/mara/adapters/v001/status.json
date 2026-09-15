@@ -1,0 +1,10 @@
+{
+  "error": null,
+  "experiment_id": "mara-lora-final-v001",
+  "finished_at": "2026-09-15T21:11:17.966774+00:00",
+  "generated_count": 1,
+  "run_id": "mara-adapter-v001",
+  "schema_version": 1,
+  "started_at": "2026-09-15T21:11:17.966774+00:00",
+  "state": "completed"
+}

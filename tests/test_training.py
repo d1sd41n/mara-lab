@@ -1,4 +1,5 @@
 import json
+import os
 import tomllib
 from pathlib import Path
 
@@ -15,12 +16,30 @@ from mara_lab.trainers.sd_scripts import compile_sd_scripts_arguments
 from mara_lab.workflows.dataset import build_character_dataset
 from mara_lab.workflows.references import run_references
 from mara_lab.workflows.train import (
+    _training_process_environment,
     stage_training_split,
     validate_training_dataset,
     write_sd_scripts_dataset_config,
 )
 
 ROOT = Path(__file__).parents[1]
+
+
+def test_training_process_uses_pinned_offline_model_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PYTHONPATH", "existing-path")
+    config = load_training_experiment_config(
+        ROOT / "configs" / "training" / "mara-lora-smoke-v001.yaml"
+    )
+
+    environment = _training_process_environment(config, ROOT / "trainer-source")
+
+    assert environment["HF_HUB_OFFLINE"] == "1"
+    assert environment["TRANSFORMERS_OFFLINE"] == "1"
+    assert environment["HF_HUB_CACHE"] == str(config.model.cache_dir.resolve())
+    assert environment["PYTHONPATH"].split(os.pathsep) == [
+        str(ROOT / "trainer-source"),
+        "existing-path",
+    ]
 
 
 def _reference_run(tmp_path: Path):

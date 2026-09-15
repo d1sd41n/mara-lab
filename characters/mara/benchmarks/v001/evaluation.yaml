@@ -1,0 +1,36 @@
+schema_version: 1
+evaluation_id: mara-v001-final
+character_id: mara
+evaluated_at: 2026-09-15
+benchmark_config: configs/benchmarks/mara-lora-final-v001.yaml
+comparison:
+  checkpoints:
+    - 600
+    - 800
+  adapter_weights:
+    - 0.6
+    - 0.8
+    - 1.0
+  images_per_combination: 20
+selection:
+  checkpoint_steps: 800
+  adapter_weight: 0.8
+  run: experiments/mara-lora-final-step0800-w080
+  contact_sheet: final-contact-sheet.png
+  contact_sheet_sha256: b59f4565f0fe2bf64e9fa5dc4795937faf85b94c65818a6b474585d997be4754
+verdict:
+  v0_1_identity_consistency: pass
+  generated_images: 20
+  same_fictional_person: pass
+  lighting_variation: pass
+  background_variation: pass
+  moderate_angle_variation: pass
+  photographic_realism: pass_with_minor_artifacts
+observations:
+  - Checkpoint 800 at weight 0.8 gave the best balance of identity and scene flexibility.
+  - Weight 1.0 over-strengthened facial features and reduced natural variation.
+  - Weight 0.6 preserved more variation but allowed more identity drift.
+known_limitations:
+  - The LoRA often depicts Mara as older than the canonical master portrait.
+  - The bathroom case can exaggerate the requested closed-mouth smile.
+  - Body consistency is promising in medium shots but is not a v0.1 acceptance criterion.

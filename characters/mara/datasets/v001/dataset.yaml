@@ -1,0 +1,10 @@
+schema_version: 1
+dataset_id: mara-v001
+character_id: mara
+token: mara_v01
+train_count: 28
+validation_count: 6
+source_run_id: mara-dataset-candidates-v001-full
+source_pass_id: c
+manifest: manifest.jsonl
+created_at: '2026-09-15T20:40:48.718506+00:00'

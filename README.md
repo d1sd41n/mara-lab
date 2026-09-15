@@ -2,9 +2,10 @@
 
 Mara Lab is a code-first experiment for creating a persistent fictional person
 across ordinary, photographically plausible images. It generates candidate
-identities, archives a human-approved canon, and expands that canon through a
-pinned PhotoMaker V2 reference workflow. Every output keeps enough lineage to
-audit the model, identity source, prompt, seed, and runtime.
+identities, archives a human-approved canon, expands that canon through a pinned
+PhotoMaker V2 reference workflow, and trains a reusable SDXL LoRA. Every output
+keeps enough lineage to audit the model, identity source, prompt, seed, and
+runtime.
 
 ## Start on Windows
 
@@ -26,6 +27,22 @@ reference workflow and its pinned PhotoMaker source with:
 
 The pretrained `buffalo_l` face-recognition pack used by InsightFace is for
 non-commercial research under its distributor's terms.
+
+## Generate Mara
+
+Mara v0.1 is ready locally. Describe only the photograph you want; the command
+adds the identity token and adult class phrase, uses the selected 800-step LoRA
+at weight 0.8, and records the prompt, seed, model, adapter hash, and runtime:
+
+```powershell
+.\.venv\Scripts\mara-lab.exe generate `
+  --scene "reading beside a laundromat window in overcast daylight, medium shot" `
+  --seed 43001
+```
+
+The PNG is written below `experiments/<run-id>/outputs/`. The 85 MB LoRA lives
+at `characters/mara/adapters/v001/adapters/` and is intentionally excluded from
+Git; its descriptor, provenance, SHA-256, and recommended weight are versioned.
 
 ## Commands
 
@@ -227,6 +244,17 @@ A real one-step trainer integration produced a loadable rank-16 LoRA with 2,166
 finite tensors and all 722 `lora_up` tensors non-zero. Training peaked at 5.86
 GiB reserved VRAM; loading that adapter and rendering a RealVisXL sentinel
 peaked at 9.16 GiB.
+
+The production run trained 1,200 steps in 893.9 seconds and saved six checkpoint
+snapshots plus the final adapter. A frozen comparison rendered 120 images across
+steps 600 and 800 at weights 0.6, 0.8, and 1.0. Human review selected step 800
+at weight 0.8. Its final 20-image benchmark passes the v0.1 identity-consistency
+gate across varied lighting, backgrounds, viewpoints, close portraits, and
+medium shots. The main known limitation is an older apparent age than the
+canonical portrait; body consistency is encouraging but remains outside the
+v0.1 acceptance criterion. See the frozen
+[`evaluation`](characters/mara/benchmarks/v001/evaluation.yaml) and
+[`contact sheet`](characters/mara/benchmarks/v001/final-contact-sheet.png).
 
 The technical decision and full experiment protocol are documented in
 [`docs/mara-v0.1-technical-decision.md`](docs/mara-v0.1-technical-decision.md).

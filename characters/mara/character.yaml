@@ -10,3 +10,12 @@ canonical:
   master: canonical/v001/master.png
   backup: canonical/v001/backup.png
   manifest: canonical/v001/manifest.jsonl
+adapter:
+  version: v001
+  descriptor: adapters/v001/adapter.yaml
+  weights: adapters/v001/adapters/mara-v001-sdxl-lora-step00000800.safetensors
+  recommended_weight: 0.8
+benchmark:
+  version: v001
+  evaluation: benchmarks/v001/evaluation.yaml
+  contact_sheet: benchmarks/v001/final-contact-sheet.png

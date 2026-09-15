@@ -1,0 +1,29 @@
+schema_version: 1
+adapter_release_id: mara-v001
+character_id: mara
+state: ready
+identity_token: mara_v01
+adapter_path: adapters/mara-v001-sdxl-lora-step00000800.safetensors
+adapter_sha256: 5afae353710286d84a9364ce32a4380acd51b2ce221438195703ed9eee88a20d
+binary_version_controlled: false
+base_model:
+  model_id: SG161222/RealVisXL_V5.0
+  revision: ac93e0dda1f6d448cae19bbfab8c5e720a5e48bc
+  weight_sha256: 6a35a7855770ae9820a3c931d4964c3817b6d9e3c6f9c4dabb5b3a94e5643b80
+training:
+  source_run: experiments/mara-lora-full-v001-full-v2
+  checkpoint_steps: 800
+  network_dim: 16
+  network_alpha: 16
+  dataset_manifest_sha256: 554c79ffc746ce983815e099d46c63b349343c54da72c5715e3bdac965da649e
+inference:
+  recommended_weight: 0.8
+  tested_weight_range:
+    - 0.6
+    - 1.0
+selection:
+  method: human_review
+  selected_at: 2026-09-15
+  benchmark_config: configs/benchmarks/mara-lora-final-v001.yaml
+  benchmark_run: experiments/mara-lora-final-step0800-w080
+  evaluation: ../../benchmarks/v001/evaluation.yaml

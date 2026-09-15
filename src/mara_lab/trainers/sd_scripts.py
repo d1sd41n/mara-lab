@@ -190,6 +190,8 @@ def ensure_sd_scripts_runtime(profile: TrainerProfile, source_dir: Path) -> tupl
     environment["HF_HUB_CACHE"] = str(
         (runtime_project.parents[1] / ".cache" / "huggingface").resolve()
     )
+    environment["HF_HUB_OFFLINE"] = "1"
+    environment["TRANSFORMERS_OFFLINE"] = "1"
     _run_checked(
         [
             str(runtime_python),

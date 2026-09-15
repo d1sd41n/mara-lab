@@ -28,6 +28,7 @@ from mara_lab.workflows.approve_references import (
 from mara_lab.workflows.benchmark import run_benchmark
 from mara_lab.workflows.candidates import run_candidates
 from mara_lab.workflows.dataset import build_character_dataset
+from mara_lab.workflows.generate import build_generation_config
 from mara_lab.workflows.prepare_model import prepare_diffusers_model
 from mara_lab.workflows.references import run_references
 from mara_lab.workflows.reproduce import reproduce_candidate
@@ -362,6 +363,56 @@ def benchmark(
     console.print(f"Generated [bold]{summary.generated_count}[/bold] benchmark image(s).")
     console.print(f"Run: {summary.run_dir}")
     console.print(f"Contact sheet: {summary.contact_sheet_path}")
+    console.print(f"Peak reserved VRAM: {summary.max_reserved_vram_gib:.2f} GiB")
+
+
+@app.command()
+def generate(
+    scene: Annotated[
+        str,
+        typer.Option(
+            "--scene",
+            "--prompt",
+            "-p",
+            help="Describe the setting, framing, light, clothing, and expression.",
+        ),
+    ],
+    adapter: Annotated[
+        Path,
+        typer.Option("--adapter", exists=True, dir_okay=False, readable=True),
+    ] = Path(
+        "characters/mara/adapters/v001/adapters/"
+        "mara-v001-sdxl-lora-step00000800.safetensors"
+    ),
+    config: Annotated[
+        Path,
+        typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
+    ] = Path("configs/benchmarks/mara-lora-final-v001.yaml"),
+    seed: Annotated[int, typer.Option(min=0, max=2**63 - 1)] = 43001,
+    adapter_weight: Annotated[
+        float, typer.Option("--adapter-weight", min=0.01, max=2.0)
+    ] = 0.8,
+    run_id: Annotated[str | None, typer.Option()] = None,
+) -> None:
+    """Generate one traced Mara photograph from a plain scene description."""
+    try:
+        resolved = build_generation_config(
+            load_benchmark_experiment_config(config), scene, seed=seed
+        )
+        summary = run_benchmark(
+            resolved,
+            adapter,
+            adapter_weight=adapter_weight,
+            run_id=run_id,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    image_path = next((summary.run_dir / "outputs").glob("*.png"))
+    console.print(f"Generated image: {image_path}")
+    console.print(f"Run: {summary.run_dir}")
+    console.print(f"Manifest: {summary.manifest_path}")
     console.print(f"Peak reserved VRAM: {summary.max_reserved_vram_gib:.2f} GiB")
 
 
