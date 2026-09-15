@@ -94,3 +94,19 @@ def test_loads_fixed_lora_sentinel_matrix() -> None:
     assert config.identity_token == "mara_v01"
     assert len(config.cases) == 4
     assert [case.seed for case in config.cases] == [41001, 41002, 41003, 41004]
+
+
+def test_loads_full_lora_training_and_benchmark_profiles() -> None:
+    training = load_training_experiment_config(
+        ROOT / "configs" / "training" / "mara-lora-full-v001.yaml"
+    )
+    benchmark = load_benchmark_experiment_config(
+        ROOT / "configs" / "benchmarks" / "mara-lora-final-v001.yaml"
+    )
+
+    assert training.trainer.max_train_steps == 1200
+    assert training.trainer.save_every_n_steps == 200
+    assert training.adapter_id == "mara-v001-sdxl-lora"
+    assert len(benchmark.cases) == 20
+    assert [case.seed for case in benchmark.cases] == list(range(42001, 42021))
+    assert all(case.prompt.count("mara_v01") == 1 for case in benchmark.cases)

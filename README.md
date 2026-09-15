@@ -142,12 +142,29 @@ LoRA smoke profile:
   --config configs/training/mara-lora-smoke-v001.yaml
 ```
 
+After the smoke adapter passes all four sentinels, run the frozen 1,200-step
+profile. It saves every 200 steps so the useful 400-1,200 checkpoint region can
+be compared without retraining:
+
+```powershell
+.\.venv\Scripts\mara-lab.exe train `
+  --config configs/training/mara-lora-full-v001.yaml
+```
+
 Render the four frozen sentinel shots from the resulting adapter:
 
 ```powershell
 .\.venv\Scripts\mara-lab.exe benchmark `
   --config configs/benchmarks/mara-lora-sentinels-v001.yaml `
   --adapter experiments/<training-run-id>/adapters/<adapter-file>.safetensors
+```
+
+The final benchmark freezes 20 ordinary photographs and unseen seeds:
+
+```powershell
+.\.venv\Scripts\mara-lab.exe benchmark `
+  --config configs/benchmarks/mara-lora-final-v001.yaml `
+  --adapter experiments/<training-run-id>/adapters/<selected-adapter>.safetensors
 ```
 
 The trainer uses rank/alpha 16, UNet-only BF16 training, 8-bit AdamW, SDPA,

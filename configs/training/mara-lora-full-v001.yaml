@@ -1,0 +1,17 @@
+schema_version: 1
+experiment_id: mara-lora-full-v001
+character_id: mara
+adapter_id: mara-v001-sdxl-lora
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+trainer_profile: ../trainers/sd-scripts-sdxl-4070s-full.yaml
+dataset_root: ../../characters/mara/datasets/v001
+dataset_manifest: ../../characters/mara/datasets/v001/manifest.jsonl
+dataset_token: mara_v01
+expected_train_images: 28
+expected_validation_images: 6
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 4
+  contact_sheet_thumbnail_width: 220
