@@ -11,11 +11,11 @@ canonical:
   backup: canonical/v001/backup.png
   manifest: canonical/v001/manifest.jsonl
 adapter:
-  version: v001
-  descriptor: adapters/v001/adapter.yaml
-  weights: adapters/v001/adapters/mara-v001-sdxl-lora-step00000800.safetensors
-  recommended_weight: 0.8
+  version: v002
+  descriptor: adapters/v002/adapter.yaml
+  weights: adapters/v002/adapters/mara-v002-sdxl-lora-step00000600.safetensors
+  recommended_weight: 0.7
 benchmark:
-  version: v001
-  evaluation: benchmarks/v001/evaluation.yaml
-  contact_sheet: benchmarks/v001/final-contact-sheet.png
+  version: v002
+  evaluation: benchmarks/v002/evaluation.yaml
+  contact_sheet: benchmarks/v002/final-contact-sheet.png

@@ -24,9 +24,10 @@ def build_generation_config(
         f"{normalized_scene}"
     )
     case = BenchmarkCase(case_id="custom-scene", prompt=prompt, seed=seed)
+    release_version = config.experiment_id.rsplit("-", maxsplit=1)[-1]
     return config.model_copy(
         update={
-            "experiment_id": f"{config.character_id}-generate-v001",
+            "experiment_id": f"{config.character_id}-generate-{release_version}",
             "cases": [case],
         }
     )

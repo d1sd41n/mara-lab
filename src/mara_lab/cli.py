@@ -27,7 +27,7 @@ from mara_lab.workflows.approve_references import (
 )
 from mara_lab.workflows.benchmark import run_benchmark
 from mara_lab.workflows.candidates import run_candidates
-from mara_lab.workflows.dataset import build_character_dataset
+from mara_lab.workflows.dataset import build_character_dataset, revise_character_dataset
 from mara_lab.workflows.generate import build_generation_config
 from mara_lab.workflows.prepare_model import prepare_diffusers_model
 from mara_lab.workflows.references import run_references
@@ -292,6 +292,54 @@ def build_dataset(
     console.print(f"Manifest: {summary.manifest_path}")
 
 
+@app.command("revise-dataset")
+def revise_dataset(
+    base_dataset: Annotated[
+        Path, typer.Option("--base-dataset", exists=True, file_okay=False)
+    ],
+    run: Annotated[Path, typer.Option("--run", exists=True, file_okay=False)],
+    drop_train: Annotated[list[str] | None, typer.Option("--drop-train")] = None,
+    drop_validation: Annotated[
+        list[str] | None, typer.Option("--drop-validation")
+    ] = None,
+    add_train: Annotated[list[str] | None, typer.Option("--add-train")] = None,
+    add_validation: Annotated[
+        list[str] | None, typer.Option("--add-validation")
+    ] = None,
+    dataset_root: Annotated[Path, typer.Option("--dataset-root")] = Path(
+        "characters/mara/datasets/v002"
+    ),
+    dataset_id: Annotated[str, typer.Option("--dataset-id")] = "mara-v002",
+    token: Annotated[str, typer.Option()] = "mara_v01",
+    expected_train: Annotated[int, typer.Option(min=1)] = 28,
+    expected_validation: Annotated[int, typer.Option(min=0)] = 6,
+) -> None:
+    """Create a traced dataset revision by replacing selected examples."""
+    try:
+        summary = revise_character_dataset(
+            base_dataset,
+            run,
+            drop_train_artifact_ids=drop_train or [],
+            drop_validation_artifact_ids=drop_validation or [],
+            add_train_artifact_ids=add_train or [],
+            add_validation_artifact_ids=add_validation or [],
+            dataset_root=dataset_root,
+            dataset_id=dataset_id,
+            token=token,
+            expected_train_count=expected_train,
+            expected_validation_count=expected_validation,
+        )
+    except (MaraLabError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"Revised dataset: [bold]{summary.train_count}[/bold] train, "
+        f"[bold]{summary.validation_count}[/bold] validation image(s)."
+    )
+    console.print(f"Root: {summary.dataset_root}")
+    console.print(f"Manifest: {summary.manifest_path}")
+
+
 @app.command("prepare-trainer")
 def prepare_trainer(
     config: Annotated[
@@ -381,17 +429,17 @@ def generate(
         Path,
         typer.Option("--adapter", exists=True, dir_okay=False, readable=True),
     ] = Path(
-        "characters/mara/adapters/v001/adapters/"
-        "mara-v001-sdxl-lora-step00000800.safetensors"
+        "characters/mara/adapters/v002/adapters/"
+        "mara-v002-sdxl-lora-step00000600.safetensors"
     ),
     config: Annotated[
         Path,
         typer.Option("--config", "-c", exists=True, dir_okay=False, readable=True),
-    ] = Path("configs/benchmarks/mara-lora-final-v001.yaml"),
+    ] = Path("configs/benchmarks/mara-lora-final-v002.yaml"),
     seed: Annotated[int, typer.Option(min=0, max=2**63 - 1)] = 43001,
     adapter_weight: Annotated[
         float, typer.Option("--adapter-weight", min=0.01, max=2.0)
-    ] = 0.8,
+    ] = 0.7,
     run_id: Annotated[str | None, typer.Option()] = None,
 ) -> None:
     """Generate one traced Mara photograph from a plain scene description."""

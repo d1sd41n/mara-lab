@@ -30,9 +30,10 @@ non-commercial research under its distributor's terms.
 
 ## Generate Mara
 
-Mara v0.1 is ready locally. Describe only the photograph you want; the command
-adds the identity token and adult class phrase, uses the selected 800-step LoRA
-at weight 0.8, and records the prompt, seed, model, adapter hash, and runtime:
+Mara v0.2 is ready locally. Describe only the photograph you want; the command
+adds the identity token and adult class phrase, uses the selected 600-step LoRA
+at weight 0.7, applies the expression-aware negative prompt, and records the
+prompt, seed, model, adapter hash, and runtime:
 
 ```powershell
 .\.venv\Scripts\mara-lab.exe generate `
@@ -41,7 +42,7 @@ at weight 0.8, and records the prompt, seed, model, adapter hash, and runtime:
 ```
 
 The PNG is written below `experiments/<run-id>/outputs/`. The 85 MB LoRA lives
-at `characters/mara/adapters/v001/adapters/` and is intentionally excluded from
+at `characters/mara/adapters/v002/adapters/` and is intentionally excluded from
 Git; its descriptor, provenance, SHA-256, and recommended weight are versioned.
 
 ## Commands
@@ -146,6 +147,17 @@ by repeating `--train` and `--validation` with their artifact IDs:
   --run experiments/<dataset-candidate-run-id> `
   --train <artifact-id> `
   --validation <artifact-id>
+```
+
+Create a new immutable dataset version by replacing selected examples from a
+completed correction run. Repeat each selection option as needed:
+
+```powershell
+.\.venv\Scripts\mara-lab.exe revise-dataset `
+  --base-dataset characters/mara/datasets/v001 `
+  --run experiments/<correction-run-id> `
+  --drop-train <old-artifact-id> `
+  --add-train <new-artifact-id>
 ```
 
 Prepare the independently pinned training runtime, then run the 200-step SDXL
@@ -255,6 +267,19 @@ canonical portrait; body consistency is encouraging but remains outside the
 v0.1 acceptance criterion. See the frozen
 [`evaluation`](characters/mara/benchmarks/v001/evaluation.yaml) and
 [`contact sheet`](characters/mara/benchmarks/v001/final-contact-sheet.png).
+
+Mara v0.2 targets the rigid, wide-eyed bias found in v0.1. A 22-image correction
+run supplied eight replacement training examples and two replacement validation
+examples while preserving the immutable 28/6 dataset split. The new run trained
+800 steps in 584.6 seconds and peaked at 5.87 GiB reserved VRAM. Review across
+checkpoints 400, 600, and 800 selected step 600 at weight 0.7. Its eight-case
+expression benchmark and 20-case general benchmark show better downward gaze,
+side gaze, smiles, squinting, and frontal relaxation while retaining identity and
+medium-shot body consistency. Direct eye contact can still look more open than
+requested, so this is a measured improvement rather than a complete cure. See the
+v0.2 [`evaluation`](characters/mara/benchmarks/v002/evaluation.yaml),
+[`general sheet`](characters/mara/benchmarks/v002/final-contact-sheet.png), and
+[`expression sheet`](characters/mara/benchmarks/v002/expression-contact-sheet.png).
 
 The technical decision and full experiment protocol are documented in
 [`docs/mara-v0.1-technical-decision.md`](docs/mara-v0.1-technical-decision.md).

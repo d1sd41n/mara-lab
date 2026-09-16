@@ -1,0 +1,37 @@
+schema_version: 1
+dataset_id: mara-v002
+character_id: mara
+token: mara_v01
+train_count: 28
+validation_count: 6
+base_dataset: C:/Users/Daniel/dev/mara-lab/characters/mara/datasets/v001
+base_manifest_sha256: 554c79ffc746ce983815e099d46c63b349343c54da72c5715e3bdac965da649e
+addition_source_run_id: mara-expression-candidates-v002-full
+source_pass_id: c
+revision:
+  drop_train:
+  - reference-c1-01-seed-33000
+  - reference-c2-01-seed-33000
+  - reference-c2-04-seed-33003
+  - reference-c6-01-seed-33000
+  - reference-c7-02-seed-33001
+  - reference-c10-01-seed-33000
+  - reference-c13-01-seed-33000
+  - reference-c17-02-seed-33001
+  drop_validation:
+  - reference-c1-04-seed-33003
+  - reference-c12-04-seed-33003
+  add_train:
+  - reference-ce2-01-seed-34100
+  - reference-ce2-02-seed-34101
+  - reference-ce3-02-seed-34101
+  - reference-ce4-02-seed-34101
+  - reference-ce5-01-seed-34100
+  - reference-ce10-01-seed-34100
+  - reference-ce11-01-seed-34100
+  - reference-ce12-02-seed-34101
+  add_validation:
+  - reference-ce4-01-seed-34100
+  - reference-ce11-02-seed-34101
+manifest: manifest.jsonl
+created_at: '2026-09-16T03:06:09.084772+00:00'

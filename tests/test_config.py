@@ -10,6 +10,7 @@ from mara_lab.config import (
     SeedRange,
     load_benchmark_experiment_config,
     load_experiment_config,
+    load_reference_experiment_config,
     load_training_experiment_config,
 )
 
@@ -110,3 +111,28 @@ def test_loads_full_lora_training_and_benchmark_profiles() -> None:
     assert len(benchmark.cases) == 20
     assert [case.seed for case in benchmark.cases] == list(range(42001, 42021))
     assert all(case.prompt.count("mara_v01") == 1 for case in benchmark.cases)
+
+
+def test_loads_v002_expression_repair_profiles() -> None:
+    candidates = load_reference_experiment_config(
+        ROOT / "configs" / "experiments" / "mara-expression-candidates-v002.yaml"
+    )
+    training = load_training_experiment_config(
+        ROOT / "configs" / "training" / "mara-lora-full-v002.yaml"
+    )
+    benchmark = load_benchmark_experiment_config(
+        ROOT / "configs" / "benchmarks" / "mara-expression-sentinels-v002.yaml"
+    )
+    final_benchmark = load_benchmark_experiment_config(
+        ROOT / "configs" / "benchmarks" / "mara-lora-final-v002.yaml"
+    )
+
+    assert len(candidates.cells) == 11
+    assert candidates.generation.seeds.count == 2
+    assert training.adapter_id == "mara-v002-sdxl-lora"
+    assert training.trainer.max_train_steps == 800
+    assert training.dataset_root.name == "v002"
+    assert len(benchmark.cases) == 8
+    assert [case.seed for case in benchmark.cases] == list(range(44001, 44009))
+    assert len(final_benchmark.cases) == 20
+    assert "wide eyes" in final_benchmark.negative_prompt

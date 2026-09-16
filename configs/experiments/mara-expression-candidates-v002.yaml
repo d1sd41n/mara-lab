@@ -1,0 +1,132 @@
+schema_version: 1
+experiment_id: mara-expression-candidates-v002
+character_id: mara
+pass_id: c
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+conditioner_profile: ../conditioners/photomaker-v2.yaml
+reference_images:
+  - ../../characters/mara/canonical/v001/master.png
+minimum_reference_images: 7
+maximum_reference_images: 7
+prompt_template_version: v2
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 5.0
+  start_merge_step: 10
+  seeds:
+    start: 34100
+    count: 2
+cells:
+  - cell_id: e2
+    view: left three-quarter view, looking down
+    expression: thoughtful expression and relaxed eyelids
+    lighting: indirect apartment window light
+    setting: a living room
+    wardrobe: a muted blue crew-neck shirt
+    framing: close portrait
+    capture_style: casual phone
+    camera_behavior: natural exposure and soft focus
+  - cell_id: e3
+    view: right three-quarter view looking slightly to the side
+    expression: calm candid gaze and relaxed brow
+    lighting: side cafe window light
+    setting: a modest cafe
+    wardrobe: a charcoal crew-neck shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: ordinary exposure and imperfect composition
+  - cell_id: e4
+    view: frontal view, head slightly tilted
+    expression: soft smile and relaxed eyes
+    lighting: open overcast daylight
+    setting: a plain exterior wall
+    wardrobe: a burgundy crew-neck shirt
+    framing: chest-up
+    capture_style: modern phone
+    camera_behavior: natural handheld framing
+  - cell_id: e5
+    view: left three-quarter view
+    expression: natural laugh with eyes slightly narrowed
+    lighting: warm kitchen window light
+    setting: a simple kitchen
+    wardrobe: a forest-green crew-neck shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: mild motion softness and ordinary auto exposure
+  - cell_id: e6
+    view: right three-quarter view
+    expression: slight natural squint and relaxed mouth
+    lighting: bright late-afternoon sunlight
+    setting: a quiet residential street
+    wardrobe: a faded blue crew-neck shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: hard natural shadows and slightly clipped highlights
+  - cell_id: e7
+    view: right near-profile view with her gaze lowered
+    expression: thoughtful expression with relaxed eyelids
+    lighting: soft overcast daylight
+    setting: a quiet bus stop
+    wardrobe: a dark navy casual jacket
+    framing: close portrait
+    capture_style: modern phone
+    camera_behavior: muted colors and natural exposure
+  - cell_id: e8
+    view: frontal view
+    expression: sleepy half-lidded eyes and a relaxed neutral mouth
+    lighting: dim bedroom morning light
+    setting: a simple bedroom just after waking
+    wardrobe: a light-gray pajama shirt
+    framing: close selfie
+    capture_style: early phone
+    camera_behavior: mild sensor noise and soft detail
+  - cell_id: e9
+    view: left near-profile view, looking away
+    expression: relaxed brow and distant gaze
+    lighting: open evening shade
+    setting: an apartment balcony
+    wardrobe: a muted teal crew-neck shirt
+    framing: chest-up
+    capture_style: modern phone
+    camera_behavior: natural exposure and imperfect framing
+  - cell_id: e10
+    view: frontal view, looking down
+    expression: subtle smile and lowered eyelids
+    lighting: flat office fluorescent light
+    setting: an office desk
+    wardrobe: a slate-gray button-up shirt
+    framing: chest-up
+    capture_style: casual phone
+    camera_behavior: cool white balance and auto exposure
+  - cell_id: e11
+    view: right three-quarter view, looking at a book
+    expression: calm expression and relaxed eyes
+    lighting: warm living-room practical light
+    setting: an armchair
+    wardrobe: a plum long-sleeve shirt
+    framing: medium portrait
+    capture_style: compact digital camera
+    camera_behavior: warm color cast and slight softness
+  - cell_id: e12
+    view: left three-quarter view, looking away
+    expression: gentle smile and relaxed eyelids
+    lighting: soft parked-car daylight
+    setting: a parked car
+    wardrobe: a green crew-neck shirt
+    framing: close selfie
+    capture_style: modern phone
+    camera_behavior: imperfect framing and restrained HDR
+negative_prompt: >-
+  child, teenager, minor, celebrity, multiple people, duplicate person, collage,
+  split screen, rotated image, plastic skin, beauty filter, CGI, illustration,
+  text, watermark, malformed face, asymmetric eyes, deformed eyes, deformed mouth,
+  extra limbs, wide eyes, startled expression, frightened expression, doll eyes,
+  rigid stare
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 8
+  contact_sheet_thumbnail_width: 180

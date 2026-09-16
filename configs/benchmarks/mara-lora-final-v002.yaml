@@ -1,0 +1,142 @@
+schema_version: 1
+experiment_id: mara-lora-final-v002
+character_id: mara
+identity_token: mara_v01
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 5.0
+cases:
+  - case_id: b01-apartment-window-frontal
+    seed: 42001
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, frontal view,
+      neutral expression, dark crew-neck shirt, plain apartment interior,
+      indirect window light, natural phone exposure and realistic skin texture
+  - case_id: b02-open-shade-left-three-quarter
+    seed: 42002
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, left three-quarter view,
+      soft closed-mouth smile, muted blue shirt, beside a plain exterior wall in open shade,
+      ordinary auto exposure and natural skin texture
+  - case_id: b03-indoor-right-three-quarter
+    seed: 42003
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, right three-quarter view,
+      serious expression, charcoal shirt, simple apartment interior, soft practical light,
+      realistic white balance and natural skin texture
+  - case_id: b04-overcast-left-profile
+    seed: 42004
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, left near-profile view,
+      relaxed expression, loose hair moved slightly by wind, burgundy shirt,
+      overcast outdoor light, imperfect handheld framing and natural skin
+  - case_id: b05-noon-right-profile
+    seed: 42005
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, right near-profile view,
+      neutral expression, dark navy shirt, plain exterior wall in hard noon side light,
+      restrained phone HDR and realistic skin texture
+  - case_id: b06-bedroom-just-awake
+    seed: 42006
+    prompt: >-
+      unretouched close early-phone selfie of mara_v01, an adult woman just awake,
+      slightly messy hair and a neutral tired expression, ordinary gray shirt,
+      simple bedroom in soft morning window light, mild sensor noise and imperfect focus
+  - case_id: b07-bathroom-mirror
+    seed: 42007
+    prompt: >-
+      unretouched bathroom mirror selfie of mara_v01, an adult woman,
+      soft closed-mouth smile, muted blue shirt, plain bathroom under cool fluorescent light,
+      natural phone exposure, believable reflection and mild sensor noise
+  - case_id: b08-elevator-mirror
+    seed: 42008
+    prompt: >-
+      unretouched elevator mirror selfie of mara_v01, an adult woman,
+      neutral expression, dark crew-neck shirt, ordinary metal elevator with mixed overhead light,
+      imperfect phone framing, believable reflection and realistic white balance
+  - case_id: b09-parked-car
+    seed: 42009
+    prompt: >-
+      unretouched close phone selfie of mara_v01, an adult woman seated in a parked car,
+      relaxed expression, forest-green shirt, side-window daylight, ordinary car interior,
+      restrained auto exposure and natural skin texture
+  - case_id: b10-kitchen-tungsten
+    seed: 42010
+    prompt: >-
+      unretouched casual compact-camera photo of mara_v01, an adult woman,
+      half-body framing and a relaxed expression, burgundy shirt, simple lived-in kitchen,
+      warm tungsten practical light and imperfect automatic white balance
+  - case_id: b11-office-fluorescent
+    seed: 42011
+    prompt: >-
+      unretouched chest-up phone photo of mara_v01, an adult woman at an ordinary office desk,
+      neutral expression, muted blue shirt, flat overhead fluorescent light,
+      restrained processing, realistic exposure and natural skin
+  - case_id: b12-night-sidewalk
+    seed: 42012
+    prompt: >-
+      unretouched nighttime phone photo of mara_v01, an adult woman on a quiet sidewalk,
+      serious expression, dark jacket over a plain shirt, storefront and street lighting,
+      visible low-light noise, slight highlight clipping and imperfect white balance
+  - case_id: b13-monitor-light
+    seed: 42013
+    prompt: >-
+      unretouched early-phone photo of mara_v01, an adult woman seated at a desk,
+      neutral expression, charcoal shirt, face lit mostly by a computer monitor,
+      dim room, high ISO noise, soft detail and realistic underexposure
+  - case_id: b14-hallway-flash
+    seed: 42014
+    prompt: >-
+      unretouched compact-camera snapshot of mara_v01, an adult woman in a plain hallway,
+      frontal view and neutral expression, forest-green shirt, direct on-camera flash,
+      hard shadow, clipped highlights and ordinary amateur framing
+  - case_id: b15-rainy-bus-stop
+    seed: 42015
+    prompt: >-
+      unretouched chest-up phone photo of mara_v01, an adult woman waiting at a rainy bus stop,
+      relaxed expression, dark navy jacket, overcast daylight, damp loose hair,
+      muted colors, natural auto exposure and an ordinary street background
+  - case_id: b16-cafe-candid
+    seed: 42016
+    prompt: >-
+      unretouched candid phone photo of mara_v01, an adult woman seated at a simple cafe table,
+      natural half-smile, muted blue shirt, side window light, imperfect composition,
+      shallow phone-camera depth of field and realistic skin texture
+  - case_id: b17-apartment-medium
+    seed: 42017
+    prompt: >-
+      unretouched medium compact-camera photo of mara_v01, an adult woman standing in an
+      apartment hallway, neutral expression, charcoal shirt and ordinary jeans,
+      ambient indoor light, natural body proportions and slightly imperfect framing
+  - case_id: b18-low-angle-crop
+    seed: 42018
+    prompt: >-
+      unretouched close early-phone photo of mara_v01, an adult woman from a slightly low angle,
+      neutral expression, burgundy shirt, plain apartment wall, imperfect crop,
+      automatic exposure, mild sensor noise and natural skin texture
+  - case_id: b19-walking-motion
+    seed: 42019
+    prompt: >-
+      unretouched candid phone photo of mara_v01, an adult woman walking along a quiet street,
+      relaxed expression, dark crew-neck shirt, evening available light,
+      mild subject motion blur, visible sensor noise and accidental composition
+  - case_id: b20-hair-occlusion
+    seed: 42020
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman in right three-quarter view,
+      neutral expression with part of her face occluded by loose hair, muted green shirt,
+      simple interior with side light, natural exposure and realistic skin texture
+negative_prompt: >-
+  child, teenager, minor, celebrity, multiple people, duplicate person, collage,
+  split screen, plastic skin, beauty filter, CGI, illustration, text, watermark,
+  malformed face, asymmetric eyes, deformed eyes, deformed mouth, wide eyes,
+  startled expression, frightened expression, doll eyes, rigid stare, extra limbs
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 5
+  contact_sheet_thumbnail_width: 180

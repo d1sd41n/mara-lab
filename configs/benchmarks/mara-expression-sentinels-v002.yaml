@@ -1,0 +1,70 @@
+schema_version: 1
+experiment_id: mara-expression-sentinels-v002
+character_id: mara
+identity_token: mara_v01
+model_profile: ../models/realvisxl-v5.yaml
+compute_profile: ../compute/local-4070s.yaml
+generation:
+  width: 640
+  height: 832
+  steps: 30
+  guidance_scale: 5.0
+cases:
+  - case_id: relaxed-frontal
+    seed: 44001
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, frontal view,
+      relaxed eyelids and calm gaze just past the camera, closed mouth, gray shirt,
+      simple apartment, soft window light, natural skin and ordinary exposure
+  - case_id: reading-down
+    seed: 44002
+    prompt: >-
+      unretouched close phone photo of mara_v01, an adult woman, left three-quarter view,
+      looking down at an open book with relaxed eyelids, muted blue shirt, simple living room,
+      indirect window light, natural skin and imperfect framing
+  - case_id: cafe-side-gaze
+    seed: 44003
+    prompt: >-
+      unretouched chest-up phone photo of mara_v01, an adult woman, right three-quarter view,
+      looking to the side with relaxed brow, charcoal shirt, modest cafe, side window light,
+      candid composition and natural skin
+  - case_id: soft-smile
+    seed: 44004
+    prompt: >-
+      unretouched chest-up phone photo of mara_v01, an adult woman, gentle closed-mouth smile,
+      soft relaxed eyes, burgundy shirt, plain exterior wall, open overcast daylight,
+      restrained processing and natural skin
+  - case_id: sunlight-squint
+    seed: 44005
+    prompt: >-
+      unretouched chest-up phone photo of mara_v01, an adult woman, slight natural squint,
+      looking away in bright late-afternoon sunlight, faded blue shirt, quiet street,
+      hard natural shadows and imperfect exposure
+  - case_id: sleepy-bedroom
+    seed: 44006
+    prompt: >-
+      unretouched close early-phone selfie of mara_v01, an adult woman just after waking,
+      sleepy half-lidded eyes, messy hair, light-gray pajama shirt, simple bedroom,
+      dim morning light, mild sensor noise and natural skin
+  - case_id: candid-conversation
+    seed: 44007
+    prompt: >-
+      unretouched candid phone photo of mara_v01, an adult woman mid-conversation,
+      looking slightly downward with relaxed eyes and natural asymmetry, muted green shirt,
+      ordinary kitchen, warm practical light and imperfect framing
+  - case_id: medium-window
+    seed: 44008
+    prompt: >-
+      unretouched medium phone photo of mara_v01, an adult woman standing beside a window,
+      looking into the distance with a calm expression, dark navy shirt, plain apartment,
+      soft side light, natural body proportions and ordinary exposure
+negative_prompt: >-
+  child, teenager, minor, celebrity, multiple people, duplicate person, collage,
+  split screen, plastic skin, beauty filter, CGI, illustration, text, watermark,
+  malformed face, asymmetric eyes, deformed eyes, deformed mouth, wide eyes,
+  startled expression, frightened expression, doll eyes, rigid stare
+output:
+  root: experiments
+  image_format: png
+  contact_sheet_columns: 4
+  contact_sheet_thumbnail_width: 220

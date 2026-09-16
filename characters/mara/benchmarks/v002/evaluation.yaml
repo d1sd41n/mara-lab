@@ -1,0 +1,48 @@
+schema_version: 1
+evaluation_id: mara-v002-final
+character_id: mara
+evaluated_at: 2026-09-15
+benchmark_configs:
+  general: configs/benchmarks/mara-lora-final-v002.yaml
+  expression: configs/benchmarks/mara-expression-sentinels-v002.yaml
+comparison:
+  baseline_release: v001
+  dataset:
+    base_version: v001
+    selected_version: v002
+    replaced_training_images: 8
+    replaced_validation_images: 2
+  checkpoints:
+    - 400
+    - 600
+    - 800
+  adapter_weights:
+    - 0.7
+    - 0.8
+selection:
+  checkpoint_steps: 600
+  adapter_weight: 0.7
+  general_run: experiments/mara-lora-final-v002-step0600-w070-neg-v2
+  expression_run: experiments/mara-expression-v002-step0600-w070
+  final_contact_sheet: final-contact-sheet.png
+  final_contact_sheet_sha256: 2faed4ec77acffb7b5bc3e4555d8bd323ea59c6f7a231e60721738655d7e83fd
+  expression_contact_sheet: expression-contact-sheet.png
+  expression_contact_sheet_sha256: 856deec0406a9df9455ce11ca7e6f86d14d948cda5cccdf2c1cdc910ca0adfd2
+verdict:
+  identity_consistency: pass
+  generated_general_images: 20
+  generated_expression_images: 8
+  expression_diversity: pass_with_known_limit
+  lighting_variation: pass
+  background_variation: pass
+  moderate_angle_variation: pass
+  medium_body_consistency: pass_in_test_matrix
+  photographic_realism: pass_with_minor_artifacts
+observations:
+  - Replacing visually rigid examples improved downward, side, smiling, and squinting expressions.
+  - Checkpoint 600 at weight 0.7 gave the best balance of identity, expression flexibility, and apparent age.
+  - The compact v0.2 negative prompt reduced startled frontal looks without weakening profiles or medium shots.
+known_limitations:
+  - Direct eye contact can still produce eyes that are more open than requested.
+  - Explicit expression and gaze wording remains useful for sleepy or half-lidded results.
+  - Body consistency was reviewed in medium shots, not as a full pose or anatomy benchmark.

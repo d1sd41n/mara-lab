@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from mara_lab.artifacts import sha256_file
 from mara_lab.backends.reference_fake import FakeReferenceBackend
 from mara_lab.config import (
     ReferenceBackendName,
@@ -13,7 +14,7 @@ from mara_lab.config import (
 )
 from mara_lab.errors import ConfigurationError
 from mara_lab.trainers.sd_scripts import compile_sd_scripts_arguments
-from mara_lab.workflows.dataset import build_character_dataset
+from mara_lab.workflows.dataset import build_character_dataset, revise_character_dataset
 from mara_lab.workflows.references import run_references
 from mara_lab.workflows.train import (
     _training_process_environment,
@@ -103,6 +104,53 @@ def test_final_dataset_rejects_intermediate_reference_pass(tmp_path: Path) -> No
             expected_train_count=2,
             expected_validation_count=1,
         )
+
+
+def test_revises_dataset_without_mutating_base(tmp_path: Path) -> None:
+    run = _reference_run(tmp_path)
+    base_root = tmp_path / "characters" / "mara" / "datasets" / "v001"
+    base = build_character_dataset(
+        run.run_dir,
+        ["reference-a1-01-seed-31000"],
+        ["reference-a1-02-seed-31001"],
+        dataset_root=base_root,
+        dataset_id="mara-v001",
+        token="mara_v01",
+        expected_train_count=1,
+        expected_validation_count=1,
+        source_pass_id="a",
+    )
+    base_manifest_sha256 = sha256_file(base.manifest_path)
+
+    revised = revise_character_dataset(
+        base_root,
+        run.run_dir,
+        drop_train_artifact_ids=["reference-a1-01-seed-31000"],
+        drop_validation_artifact_ids=[],
+        add_train_artifact_ids=["reference-a1-03-seed-31002"],
+        add_validation_artifact_ids=[],
+        dataset_root=tmp_path / "characters" / "mara" / "datasets" / "v002",
+        dataset_id="mara-v002",
+        token="mara_v01",
+        expected_train_count=1,
+        expected_validation_count=1,
+        source_pass_id="a",
+    )
+
+    records = [
+        json.loads(line)
+        for line in revised.manifest_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert [record["source_artifact"]["artifact_id"] for record in records] == [
+        "reference-a1-03-seed-31002",
+        "reference-a1-02-seed-31001",
+    ]
+    assert all(record["dataset_id"] == "mara-v002" for record in records)
+    assert sha256_file(base.manifest_path) == base_manifest_sha256
+    assert (base_root / "train" / "reference-a1-01-seed-31000.png").is_file()
+    assert not (
+        revised.dataset_root / "train" / "reference-a1-01-seed-31000.png"
+    ).exists()
 
 
 def test_validates_dataset_and_compiles_sd_scripts_contract(tmp_path: Path) -> None:
