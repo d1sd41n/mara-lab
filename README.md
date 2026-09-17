@@ -74,6 +74,26 @@ and remaining limits, plus the frozen
 [`contact sheet`](characters/mara/benchmarks/flux2-klein-pilot-v001/contact-sheet.png)
 and [`evaluation`](characters/mara/benchmarks/flux2-klein-pilot-v001/evaluation.yaml).
 
+Run the frozen 24-case body and expression gate, then record supporting facial
+similarity measurements:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\flux2_klein_pilot.py `
+  --run-id mara-flux2-klein-body-expression-v001 `
+  --suite body-expression `
+  --limit 24
+
+.\.venv\Scripts\python.exe scripts\score_flux2_identity.py `
+  --run-dir experiments\mara-flux2-klein-body-expression-v001
+```
+
+The frozen gate passes body consistency, scene quality, and expression range,
+but reference-only conditioning does not hold Mara's identity strongly enough
+in profiles, rear turns, and broad laughter. See the
+[`gate decision`](docs/mara-flux2-klein-body-expression-gate-v001.md),
+[`contact sheet`](characters/mara/benchmarks/flux2-klein-body-expression-v001/contact-sheet.png),
+and [`evaluation`](characters/mara/benchmarks/flux2-klein-body-expression-v001/evaluation.yaml).
+
 ## Commands
 
 Run the tests:

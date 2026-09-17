@@ -18,6 +18,17 @@ def test_pilot_matrix_has_unique_reproducible_cases() -> None:
     assert all("same fictional adult woman" in case.prompt for case in flux2_klein_pilot.CASES)
 
 
+def test_body_expression_gate_has_unique_reproducible_cases() -> None:
+    cases = flux2_klein_pilot.BODY_EXPRESSION_CASES
+
+    assert len(cases) == 24
+    assert len({case.case_id for case in cases}) == 24
+    assert len({case.seed for case in cases}) == 24
+    assert not {case.case_id for case in cases} & {case.case_id for case in flux2_klein_pilot.CASES}
+    assert not {case.seed for case in cases} & {case.seed for case in flux2_klein_pilot.CASES}
+    assert all("same fictional adult woman" in case.prompt for case in cases)
+
+
 def test_embedding_cache_key_changes_with_prompt_and_length(tmp_path: Path) -> None:
     first = flux2_klein_pilot.embedding_cache_path(tmp_path, "first", 256)
     repeated = flux2_klein_pilot.embedding_cache_path(tmp_path, "first", 256)
@@ -37,3 +48,5 @@ def test_cli_defaults_use_pinned_cache_layout(monkeypatch) -> None:
     assert args.model_root == DEFAULT_MODEL_ROOT
     assert args.text_encoder_root == DEFAULT_TEXT_ENCODER_ROOT
     assert args.fp8_transformer_root == DEFAULT_FP8_TRANSFORMER_ROOT
+    assert args.suite == "everyday"
+    assert args.limit == 1

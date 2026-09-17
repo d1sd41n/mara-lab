@@ -120,6 +120,162 @@ CASES = (
 )
 
 
+BODY_EXPRESSION_CASES = (
+    PilotCase(
+        "full-front-neutral",
+        47101,
+        "Full-body front view standing naturally against a plain apartment wall, fitted "
+        "charcoal T-shirt, straight-leg jeans and sneakers, both arms relaxed and both hands "
+        "visible, neutral expression, even daylight, head-to-toe framing.",
+    ),
+    PilotCase(
+        "full-back-turn",
+        47102,
+        "Full-body rear view walking away on a quiet sidewalk while turning her head back "
+        "toward the camera, navy jacket, jeans and sneakers, natural stride, open shade, "
+        "head-to-toe framing.",
+    ),
+    PilotCase(
+        "full-profile-walk",
+        47103,
+        "Full-body strict side-profile view walking across a pedestrian crossing, muted green "
+        "shirt, jeans and flat shoes, natural arm swing and stride, overcast daylight.",
+    ),
+    PilotCase(
+        "low-angle-stairs",
+        47104,
+        "Full-body candid view walking up outdoor concrete stairs, photographed from a modest "
+        "low angle, burgundy sweater, dark jeans and sneakers, looking toward the next step.",
+    ),
+    PilotCase(
+        "high-angle-hallway",
+        47105,
+        "Full-body view in an apartment hallway photographed from a high corner angle, looking "
+        "up toward the camera, light blue shirt, black trousers and simple shoes, relaxed stance.",
+    ),
+    PilotCase(
+        "one-leg-balance",
+        47106,
+        "Full-body candid view balancing on one leg while putting on a sneaker near the front "
+        "door, gray T-shirt and jeans, one hand against the wall, focused downward gaze.",
+    ),
+    PilotCase(
+        "chair-crossed-legs",
+        47107,
+        "Seated full-body view in a simple dining chair with legs crossed at the ankles, navy "
+        "blouse, straight trousers and flats, hands resting naturally in her lap, soft daylight.",
+    ),
+    PilotCase(
+        "sofa-sideways",
+        47108,
+        "Relaxed full-body view sitting sideways on a sofa with one knee bent and one foot on "
+        "the floor, burgundy sweater and jeans, reading a message on her phone.",
+    ),
+    PilotCase(
+        "floor-cross-legged",
+        47109,
+        "Full-body view sitting cross-legged on a living-room rug while sorting printed photos, "
+        "gray long-sleeve shirt and jeans, both hands visible, looking down with concentration.",
+    ),
+    PilotCase(
+        "crouch-tie-shoe",
+        47110,
+        "Full-body three-quarter view crouching to tie a shoelace on a park bench path, dark "
+        "T-shirt, jeans and sneakers, both hands clearly interacting with the laces.",
+    ),
+    PilotCase(
+        "reach-high-shelf",
+        47111,
+        "Medium-full side view reaching both arms overhead for a box on a high kitchen shelf, "
+        "olive shirt and jeans, natural torso stretch, focused upward gaze.",
+    ),
+    PilotCase(
+        "carry-grocery-bags",
+        47112,
+        "Full-body view entering an apartment carrying one paper grocery bag in each hand, navy "
+        "jacket, jeans and sneakers, natural weight and shoulder posture, subtle effort.",
+    ),
+    PilotCase(
+        "pour-water",
+        47113,
+        "Waist-up three-quarter view pouring water from a glass pitcher into a drinking glass, "
+        "light blue shirt, both hands visible and correctly placed, eyes following the water.",
+    ),
+    PilotCase(
+        "write-notebook",
+        47114,
+        "Seated medium view writing in a notebook at a cafe table, burgundy cardigan, pen held "
+        "naturally in her right hand and left hand holding the page, focused downward gaze.",
+    ),
+    PilotCase(
+        "open-jar",
+        47115,
+        "Waist-up candid kitchen view opening a stubborn glass jar with both hands, charcoal "
+        "T-shirt, mild effort in her face, natural wrist and finger placement.",
+    ),
+    PilotCase(
+        "fold-laundry",
+        47116,
+        "Medium-full view standing beside a bed and folding a blue cotton shirt with both hands, "
+        "gray pajama top and dark lounge pants, calm downward gaze, morning window light.",
+    ),
+    PilotCase(
+        "strict-profile-neutral",
+        47117,
+        "Shoulders-up strict left-profile portrait beside a window, loose dark brown hair tucked "
+        "behind one ear, neutral mouth and relaxed eye, realistic skin texture.",
+    ),
+    PilotCase(
+        "over-shoulder-gaze",
+        47118,
+        "Chest-up rear three-quarter portrait turning to look over her shoulder toward the "
+        "camera, dark blue blouse, loose hair, calm closed-mouth expression, soft daylight.",
+    ),
+    PilotCase(
+        "broad-toothy-laugh",
+        47119,
+        "Chest-up candid portrait during a genuine broad laugh with teeth visible, eyes naturally "
+        "narrowed and cheeks raised, head tilted slightly back, warm indoor light.",
+    ),
+    PilotCase(
+        "sunlight-squint",
+        47120,
+        "Chest-up outdoor portrait squinting naturally in bright sunlight while shading her eyes "
+        "with one hand, closed-mouth half-smile, realistic facial creases.",
+    ),
+    PilotCase(
+        "eyes-closed-calm",
+        47121,
+        "Shoulders-up portrait with both eyes fully closed and a peaceful neutral expression, "
+        "face angled slightly upward toward soft window light, no smile.",
+    ),
+    PilotCase(
+        "concerned-frown",
+        47122,
+        "Chest-up candid portrait reading a concerning message on her phone, subtle natural "
+        "frown with knitted brows and compressed lips, gaze directed downward.",
+    ),
+    PilotCase(
+        "pleasant-surprise",
+        47123,
+        "Chest-up candid portrait reacting with pleasant surprise, raised eyebrows, widened eyes "
+        "and slightly open mouth, one hand touching her upper chest, ordinary indoor light.",
+    ),
+    PilotCase(
+        "windblown-three-quarter",
+        47124,
+        "Chest-up outdoor three-quarter portrait in a light breeze, loose hair moving naturally "
+        "across one cheek, looking past the camera with relaxed eyes and neutral lips.",
+    ),
+)
+
+
+SUITES = {
+    "everyday": CASES,
+    "body-expression": BODY_EXPRESSION_CASES,
+}
+
+
 def utc_now() -> str:
     return datetime.now(UTC).isoformat()
 
@@ -298,7 +454,8 @@ def run(args: argparse.Namespace) -> Path:
     text_encoder_root = args.text_encoder_root.resolve()
     fp8_transformer_root = args.fp8_transformer_root.resolve()
     references = [path.resolve() for path in args.reference]
-    selected_cases = CASES[: args.limit]
+    suite_cases = SUITES[args.suite]
+    selected_cases = suite_cases[: args.limit]
     validate_inputs(model_root, text_encoder_root, fp8_transformer_root, references)
 
     run_dir = (args.output_root / args.run_id).resolve()
@@ -313,6 +470,7 @@ def run(args: argparse.Namespace) -> Path:
         "schema_version": 1,
         "state": "running",
         "run_id": args.run_id,
+        "suite": args.suite,
         "started_at": started_at,
         "finished_at": None,
         "generated_count": 0,
@@ -425,6 +583,7 @@ def run(args: argparse.Namespace) -> Path:
             "steps": args.steps,
             "guidance_scale": args.guidance_scale,
             "max_sequence_length": args.max_sequence_length,
+            "suite": args.suite,
             "peak_reserved_vram_gib": round(torch.cuda.max_memory_reserved() / 1024**3, 4),
             "wall_seconds": round(time.perf_counter() - start, 3),
         }
@@ -469,7 +628,8 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Repeat for each identity reference image.",
     )
-    parser.add_argument("--limit", type=int, default=1, choices=range(1, len(CASES) + 1))
+    parser.add_argument("--suite", choices=tuple(SUITES), default="everyday")
+    parser.add_argument("--limit", type=int, default=1)
     parser.add_argument("--width", type=int, default=640)
     parser.add_argument("--height", type=int, default=832)
     parser.add_argument("--steps", type=int, default=4)
@@ -481,6 +641,9 @@ def parse_args() -> argparse.Namespace:
             Path("characters/mara/canonical/v001/master.png"),
             Path("characters/mara/canonical/v001/backup.png"),
         ]
+    suite_size = len(SUITES[args.suite])
+    if not 1 <= args.limit <= suite_size:
+        parser.error(f"--limit must be between 1 and {suite_size} for suite {args.suite!r}")
     return args
 
 

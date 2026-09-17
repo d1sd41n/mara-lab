@@ -1,0 +1,94 @@
+schema_version: 1
+evaluation_id: mara-flux2-klein-body-expression-v001
+character_id: mara
+evaluated_at: 2026-09-16
+purpose: Freeze the reference-only baseline before any FLUX LoRA training.
+run:
+  run_id: mara-flux2-klein-body-expression-v001
+  path: experiments/mara-flux2-klein-body-expression-v001
+  suite: body-expression
+  generated_images: 24
+  manifest_sha256: 7fcf554d8ed3328f3b5662ac42e8688ac7afb2f5e782c528036e1c2ac196f807
+  environment_sha256: 61c1261d7843474c72812cf2707a443a25f7e9a9efc34ba4c1e728d29b7591db
+model:
+  pipeline_id: black-forest-labs/FLUX.2-klein-4B
+  pipeline_revision: e7b7dc27f91deacad38e78976d1f2b499d76a294
+  fp8_transformer_id: Photoroom/FLUX.2-klein-4b-fp8-diffusers
+  fp8_transformer_revision: 408c457f3589e17a1be1dae5bf0dcaf09cd4985f
+  fp8_transformer_sha256: 13b37a5ca5cd9cf190236e7e99a3f086cf24618682f74e27a6f00cb173c308c8
+references:
+  - role: master
+    candidate: 0063
+    path: characters/mara/canonical/v001/master.png
+    sha256: 72450395ccaaafc215fae77cebae6382344503b97ae4a8f55fcfbe126ea1d8b6
+  - role: backup
+    candidate: 0055
+    path: characters/mara/canonical/v001/backup.png
+    sha256: 04a9088b6b6e5a511099be4ea95c46231d6f0c8157c89ccfeff801edaa1be45a
+settings:
+  width: 640
+  height: 832
+  steps: 4
+  guidance_scale: 1.0
+  seeds:
+    first: 47101
+    last: 47124
+coverage:
+  full_body_and_viewpoint: 6
+  seated_and_dynamic_anatomy: 6
+  hands_and_object_interaction: 4
+  facial_angles_and_expressions: 8
+measurements:
+  wall_seconds: 144.953
+  peak_reserved_vram_gib: 7.0645
+  single_face_detection_rate: 1.0
+  insightface_reference_pair_cosine: 0.39338
+  insightface_cosine_to_reference_centroid:
+    minimum: 0.002706
+    median: 0.363833
+    mean: 0.348207
+    maximum: 0.603237
+  comparison_everyday_pilot_mean: 0.3466
+  identity_metric_interpretation: Supporting measurement only; no calibrated pass threshold.
+artifacts:
+  contact_sheet: contact-sheet.png
+  contact_sheet_sha256: 624a136c8ba724dd7c751c5b71ef972a6dfbc3c83e5208af91bc1337e3b20002
+  identity_report: identity-evaluation.json
+  identity_report_sha256: 8c893ba5af368e50ae8b472067adb980a5d3bfc3011b0686ec446483158a86fb
+review:
+  status: model_assisted_complete_pending_user_review
+  gate_verdict: proceed_to_flux_lora
+  criteria:
+    modern_photographic_quality: pass
+    body_proportion_consistency: pass
+    seated_and_dynamic_anatomy: pass
+    hand_and_object_anatomy: pass_with_one_clear_failure
+    pose_and_expression_range: pass
+    prompt_adherence: pass_with_minor_misses
+    reference_only_identity_consistency: fail_for_production
+  strengths:
+    - Body build and proportions remain plausible across front, rear, profile, seated, crouched, and overhead-reaching views.
+    - Walking, crossed-leg, floor-seated, crouching, writing, and grocery-carrying scenes have convincing anatomy.
+    - Closed eyes, squinting, concern, surprise, and windblown three-quarter views avoid the single rigid expression seen in the older workflow.
+  flagged_cases:
+    - case_id: pour-water
+      issue: Ambiguous duplicated fingers around the glass make the hand interaction anatomically invalid.
+    - case_id: full-profile-walk
+      issue: The body is convincing, but facial identity is weak in strict profile.
+    - case_id: full-back-turn
+      issue: Turning face drifts from the canonical facial structure.
+    - case_id: over-shoulder-gaze
+      issue: Facial structure and apparent age drift despite good pose rendering.
+    - case_id: broad-toothy-laugh
+      issue: The expression is natural, but the strongest visible identity drift occurs here.
+    - case_id: low-angle-stairs
+      issue: Anatomy passes, but the result descends instead of walking up the stairs.
+    - case_id: one-leg-balance
+      issue: Balance pose passes, but both shoes are already worn instead of one being put on.
+decision:
+  - Keep FLUX.2 Klein as the target image model because body, scene, and expression quality pass the gate.
+  - Do not treat two-reference conditioning as final identity control.
+  - Use this suite unchanged as the pre-LoRA baseline for future comparisons.
+  - Exclude visibly drifted outputs from any identity training dataset.
+next_step:
+  recommendation: Run a low-memory FLUX.2 Base LoRA feasibility spike with a small identity-clean dataset, then compare the adapter against this exact 24-case suite.

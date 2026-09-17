@@ -1,0 +1,383 @@
+{
+  "created_at": "2026-09-17T03:17:43.535098+00:00",
+  "manifest_sha256": "7fcf554d8ed3328f3b5662ac42e8688ac7afb2f5e782c528036e1c2ac196f807",
+  "method": {
+    "interpretation": "Supporting measurement only; no calibrated pass threshold.",
+    "metric": "cosine similarity to the normalized reference centroid",
+    "model": "buffalo_l",
+    "provider": "CPUExecutionProvider",
+    "threshold": null
+  },
+  "reference_pair_cosine_mean": 0.39338,
+  "references": [
+    {
+      "bbox": [
+        168.41000366210938,
+        140.02999877929688,
+        426.07000732421875,
+        501.3599853515625
+      ],
+      "path": "characters/mara/canonical/v001/master.png",
+      "sha256": "72450395ccaaafc215fae77cebae6382344503b97ae4a8f55fcfbe126ea1d8b6"
+    },
+    {
+      "bbox": [
+        216.36000061035156,
+        187.07000732421875,
+        413.3299865722656,
+        476.5199890136719
+      ],
+      "path": "characters/mara/canonical/v001/backup.png",
+      "sha256": "04a9088b6b6e5a511099be4ea95c46231d6f0c8157c89ccfeff801edaa1be45a"
+    }
+  ],
+  "results": [
+    {
+      "artifact_id": "flux2-full-front-neutral-seed-47101",
+      "cosine_to_reference_centroid": 0.374131,
+      "face_bbox": [
+        295.2699890136719,
+        57.93000030517578,
+        362.75,
+        150.8800048828125
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-full-front-neutral-seed-47101.png",
+      "image_sha256": "bbdfbe5f2eef7dff67e700a7c248144624a9c37d5098b68463037c7cea909c17",
+      "sequence": 1
+    },
+    {
+      "artifact_id": "flux2-full-back-turn-seed-47102",
+      "cosine_to_reference_centroid": 0.144731,
+      "face_bbox": [
+        270.4200134277344,
+        62.470001220703125,
+        332.260009765625,
+        154.60000610351562
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-full-back-turn-seed-47102.png",
+      "image_sha256": "8e14dbe285c004d4a99b797f75a0a68a5f3e4d9c9bc9c1fbf5845523dea95876",
+      "sequence": 2
+    },
+    {
+      "artifact_id": "flux2-full-profile-walk-seed-47103",
+      "cosine_to_reference_centroid": 0.002706,
+      "face_bbox": [
+        276.3999938964844,
+        87.91000366210938,
+        328.8399963378906,
+        169.8300018310547
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-full-profile-walk-seed-47103.png",
+      "image_sha256": "0081eba419d2a12f0919857931d0b80951b27081b43d31cf6799510a53032563",
+      "sequence": 3
+    },
+    {
+      "artifact_id": "flux2-low-angle-stairs-seed-47104",
+      "cosine_to_reference_centroid": 0.216084,
+      "face_bbox": [
+        288.7200012207031,
+        64.51000213623047,
+        353.489990234375,
+        152.39999389648438
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-low-angle-stairs-seed-47104.png",
+      "image_sha256": "2a489bd20c1eae854d933721dd1236ef434af0991fd2f3b4440ffddab8e6547b",
+      "sequence": 4
+    },
+    {
+      "artifact_id": "flux2-high-angle-hallway-seed-47105",
+      "cosine_to_reference_centroid": 0.577542,
+      "face_bbox": [
+        250.60000610351562,
+        85.19000244140625,
+        366.29998779296875,
+        256.79998779296875
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-high-angle-hallway-seed-47105.png",
+      "image_sha256": "17de14e41a0b79cf2e7d58c806fa04e04c594676cfdf4e211e6e37355d2a8257",
+      "sequence": 5
+    },
+    {
+      "artifact_id": "flux2-one-leg-balance-seed-47106",
+      "cosine_to_reference_centroid": 0.096111,
+      "face_bbox": [
+        277.2300109863281,
+        104.05999755859375,
+        354.0199890136719,
+        202.69000244140625
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-one-leg-balance-seed-47106.png",
+      "image_sha256": "8c0337cf3000c6af44cd815a364a60465fccde9cbbb9db5d62ba489cf1daf0c5",
+      "sequence": 6
+    },
+    {
+      "artifact_id": "flux2-chair-crossed-legs-seed-47107",
+      "cosine_to_reference_centroid": 0.400484,
+      "face_bbox": [
+        282.6700134277344,
+        59.099998474121094,
+        366.2900085449219,
+        174.16000366210938
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-chair-crossed-legs-seed-47107.png",
+      "image_sha256": "7e450bd93fbd7503db4c92ec93d2ff07994ba8ad710dea6b1a44219261f2c5a8",
+      "sequence": 7
+    },
+    {
+      "artifact_id": "flux2-sofa-sideways-seed-47108",
+      "cosine_to_reference_centroid": 0.208325,
+      "face_bbox": [
+        216.3300018310547,
+        113.36000061035156,
+        295.1600036621094,
+        229.4499969482422
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-sofa-sideways-seed-47108.png",
+      "image_sha256": "98473a6066ca00d62a0aace0a47291788c903c60d473e33002379176e652de1d",
+      "sequence": 8
+    },
+    {
+      "artifact_id": "flux2-floor-cross-legged-seed-47109",
+      "cosine_to_reference_centroid": 0.445375,
+      "face_bbox": [
+        254.74000549316406,
+        138.22000122070312,
+        361.7099914550781,
+        273.19000244140625
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-floor-cross-legged-seed-47109.png",
+      "image_sha256": "57a3368ee8ece788c5c7fe0526930d9ecaa82a5d156d83b1d294f2d4791879eb",
+      "sequence": 9
+    },
+    {
+      "artifact_id": "flux2-crouch-tie-shoe-seed-47110",
+      "cosine_to_reference_centroid": 0.307083,
+      "face_bbox": [
+        266.3500061035156,
+        111.0,
+        370.67999267578125,
+        252.0399932861328
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-crouch-tie-shoe-seed-47110.png",
+      "image_sha256": "6ad3b6b6bf4d3a3f724c7e951d8f642ece14670b08156a6a818ec9e9d635c39f",
+      "sequence": 10
+    },
+    {
+      "artifact_id": "flux2-reach-high-shelf-seed-47111",
+      "cosine_to_reference_centroid": 0.23095,
+      "face_bbox": [
+        322.30999755859375,
+        218.63999938964844,
+        441.9599914550781,
+        344.04998779296875
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-reach-high-shelf-seed-47111.png",
+      "image_sha256": "93b978bc4ae98988e7d32f8604e73aab2237685508c49231bdd5f45c2d9d9d93",
+      "sequence": 11
+    },
+    {
+      "artifact_id": "flux2-carry-grocery-bags-seed-47112",
+      "cosine_to_reference_centroid": 0.208431,
+      "face_bbox": [
+        286.29998779296875,
+        64.80000305175781,
+        355.6400146484375,
+        159.77999877929688
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-carry-grocery-bags-seed-47112.png",
+      "image_sha256": "bcd6fb8a5c8e5825619d416d56d0c33ee6cd30babfcd0ba7cad04e9205df4cf4",
+      "sequence": 12
+    },
+    {
+      "artifact_id": "flux2-pour-water-seed-47113",
+      "cosine_to_reference_centroid": 0.603237,
+      "face_bbox": [
+        243.72999572753906,
+        114.08000183105469,
+        406.6400146484375,
+        340.2799987792969
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-pour-water-seed-47113.png",
+      "image_sha256": "952259b62b2fbc9eaff3654154100c637b024517521af251000c0c3db5ad8e56",
+      "sequence": 13
+    },
+    {
+      "artifact_id": "flux2-write-notebook-seed-47114",
+      "cosine_to_reference_centroid": 0.535086,
+      "face_bbox": [
+        250.35000610351562,
+        156.17999267578125,
+        405.239990234375,
+        364.55999755859375
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-write-notebook-seed-47114.png",
+      "image_sha256": "e26eab1cd1babc7b254a452161faf429765d8dd9c9dc36b6a43b6587a42c55c9",
+      "sequence": 14
+    },
+    {
+      "artifact_id": "flux2-open-jar-seed-47115",
+      "cosine_to_reference_centroid": 0.443265,
+      "face_bbox": [
+        256.04998779296875,
+        128.5800018310547,
+        399.25,
+        336.7699890136719
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-open-jar-seed-47115.png",
+      "image_sha256": "d1a64b7afaf24fc435c8189312d063242a20619d9f72aa35b6c61d7d6d078c45",
+      "sequence": 15
+    },
+    {
+      "artifact_id": "flux2-fold-laundry-seed-47116",
+      "cosine_to_reference_centroid": 0.326728,
+      "face_bbox": [
+        264.8399963378906,
+        134.0,
+        369.2200012207031,
+        254.47999572753906
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-fold-laundry-seed-47116.png",
+      "image_sha256": "99a8097ea2b4587c29f915cc164b12674ebaa60893d709338ca821c4d8f63dec",
+      "sequence": 16
+    },
+    {
+      "artifact_id": "flux2-strict-profile-neutral-seed-47117",
+      "cosine_to_reference_centroid": 0.44929,
+      "face_bbox": [
+        168.4499969482422,
+        149.05999755859375,
+        413.30999755859375,
+        503.239990234375
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-strict-profile-neutral-seed-47117.png",
+      "image_sha256": "d24eb5a93b187e11aea7513395ce511dcdcef856d06f1f1cb7744bae2a2b282e",
+      "sequence": 17
+    },
+    {
+      "artifact_id": "flux2-over-shoulder-gaze-seed-47118",
+      "cosine_to_reference_centroid": 0.462251,
+      "face_bbox": [
+        170.07000732421875,
+        130.8300018310547,
+        407.0799865722656,
+        477.07000732421875
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-over-shoulder-gaze-seed-47118.png",
+      "image_sha256": "d72e46b8aca406d36027ef1da8b312182fc8d1d4f9fe42efe87e3ee98f2aaf13",
+      "sequence": 18
+    },
+    {
+      "artifact_id": "flux2-broad-toothy-laugh-seed-47119",
+      "cosine_to_reference_centroid": 0.157384,
+      "face_bbox": [
+        164.44000244140625,
+        112.05000305175781,
+        439.7699890136719,
+        541.780029296875
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-broad-toothy-laugh-seed-47119.png",
+      "image_sha256": "be2d19e63aeb325313577b5c6418d30d4111a64881603fbbf1d5df169498b09c",
+      "sequence": 19
+    },
+    {
+      "artifact_id": "flux2-sunlight-squint-seed-47120",
+      "cosine_to_reference_centroid": 0.290366,
+      "face_bbox": [
+        190.00999450683594,
+        138.14999389648438,
+        446.82000732421875,
+        505.3399963378906
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-sunlight-squint-seed-47120.png",
+      "image_sha256": "26e92bf4d233b79fb34efd0724feedf555f82c98bd0caaf10d390b1ae363e32b",
+      "sequence": 20
+    },
+    {
+      "artifact_id": "flux2-eyes-closed-calm-seed-47121",
+      "cosine_to_reference_centroid": 0.54369,
+      "face_bbox": [
+        175.5,
+        110.44999694824219,
+        427.80999755859375,
+        468.7200012207031
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-eyes-closed-calm-seed-47121.png",
+      "image_sha256": "c8575cf859416dca7724b6b6e4643be6f96f6556f9e73bca31e9375ac54a6833",
+      "sequence": 21
+    },
+    {
+      "artifact_id": "flux2-concerned-frown-seed-47122",
+      "cosine_to_reference_centroid": 0.353534,
+      "face_bbox": [
+        195.02999877929688,
+        177.47000122070312,
+        424.04998779296875,
+        489.8900146484375
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-concerned-frown-seed-47122.png",
+      "image_sha256": "8b942bc81ec256dc57040f2d040630aaac0d3f072a9fe6d89be0cf18d5ced9df",
+      "sequence": 22
+    },
+    {
+      "artifact_id": "flux2-pleasant-surprise-seed-47123",
+      "cosine_to_reference_centroid": 0.448982,
+      "face_bbox": [
+        193.86000061035156,
+        113.19999694824219,
+        437.6600036621094,
+        488.5
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-pleasant-surprise-seed-47123.png",
+      "image_sha256": "bf73271ccd3ce67e460b2afe9c25e0473ceae3d06bc07ecab0e8278fc79886ae",
+      "sequence": 23
+    },
+    {
+      "artifact_id": "flux2-windblown-three-quarter-seed-47124",
+      "cosine_to_reference_centroid": 0.531206,
+      "face_bbox": [
+        187.47000122070312,
+        130.3699951171875,
+        434.04998779296875,
+        482.8999938964844
+      ],
+      "faces_detected": 1,
+      "image_path": "outputs/flux2-windblown-three-quarter-seed-47124.png",
+      "image_sha256": "3ab05f352bb85a6701e11fbc69dcfc9c30af3bc5425a222673e65547525b840a",
+      "sequence": 24
+    }
+  ],
+  "run_dir": "experiments/mara-flux2-klein-body-expression-v001",
+  "schema_version": 1,
+  "summary": {
+    "cosine_max": 0.603237,
+    "cosine_mean": 0.348207,
+    "cosine_median": 0.363833,
+    "cosine_min": 0.002706,
+    "detection_rate": 1.0,
+    "generated_images": 24,
+    "single_face_detections": 24
+  }
+}
