@@ -1,0 +1,78 @@
+schema_version: 1
+experiment_id: mara-flux2-klein-lora-smoke-v001
+character_id: mara
+
+dataset:
+  output_root: .cache/flux2-lora/datasets/mara-v001
+  expected_images: 20
+  source_manifest: characters/mara/datasets/v002/manifest.jsonl
+  source_manifest_sha256: 8e86ec0c9316b08921c0bfddb6b366abfa2e6eb5f445955361bb5115fcc67619
+  source_token: mara_v01
+  trigger_token: MARA_K1
+  instance_prompt: a photo of MARA_K1, an adult woman
+  canonical_images:
+    - artifact_id: canonical-0063
+      path: characters/mara/canonical/v001/master.png
+      sha256: 72450395ccaaafc215fae77cebae6382344503b97ae4a8f55fcfbe126ea1d8b6
+      caption: >-
+        a close portrait photo of MARA_K1, an adult woman, frontal view, neutral
+        expression, wearing a black crew-neck shirt, against a plain dark gray
+        background, lit by soft directional light
+    - artifact_id: canonical-0055
+      path: characters/mara/canonical/v001/backup.png
+      sha256: 04a9088b6b6e5a511099be4ea95c46231d6f0c8157c89ccfeff801edaa1be45a
+      caption: >-
+        a close portrait photo of MARA_K1, an adult woman, frontal view, neutral
+        expression, wearing a dark shirt, beside window blinds in soft daylight
+  selected_artifact_ids:
+    - reference-c4-02-seed-33001
+    - reference-c5-02-seed-33001
+    - reference-c5-03-seed-33002
+    - reference-c7-03-seed-33002
+    - reference-c8-02-seed-33001
+    - reference-c9-03-seed-33002
+    - reference-c10-02-seed-33001
+    - reference-c11-02-seed-33001
+    - reference-c12-02-seed-33001
+    - reference-c13-04-seed-33003
+    - reference-c14-02-seed-33001
+    - reference-c15-03-seed-33002
+    - reference-c17-03-seed-33002
+    - reference-ce2-02-seed-34101
+    - reference-ce3-02-seed-34101
+    - reference-ce5-01-seed-34100
+    - reference-ce11-01-seed-34100
+    - reference-c15-01-seed-33000
+
+model:
+  model_id: black-forest-labs/FLUX.2-klein-base-4B
+  revision: a3b4f4849157f664bdbc776fd7453c2783562f4d
+  output_root: .cache/models/flux2-klein-base-4b
+  transformer_sha256: e109674697ffa1a3983126e32512f5428a9442bd8df59f9c95566ee90a473bb6
+  shared_components_root: .cache/models/flux2-klein-4b
+  vae_sha256: ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04
+
+prompt_cache:
+  output_path: .cache/flux2-lora/prompt-embeddings/mara-k1-v001.pt
+  text_encoder_root: .cache/models/flux2-klein-4b/text_encoder-resharded-512mib
+  max_sequence_length: 256
+  text_encoder_out_layers: [10, 20, 30]
+
+trainer:
+  repository_url: https://github.com/huggingface/diffusers.git
+  repository_root: .cache/tools/diffusers-flux2
+  revision: a3608b512ed7248499a44c61d954965ed9bdae4d
+  source_path: examples/dreambooth/train_dreambooth_lora_flux2_klein.py
+  generated_path: .cache/flux2-lora/trainer/train_dreambooth_lora_flux2_klein_precomputed.py
+  quantization_config: configs/training/flux2-klein-nf4.json
+  mixed_precision: bf16
+  aspect_ratio_buckets: 512,384
+  train_batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 0.0001
+  rank: 4
+  lora_alpha: 4
+  max_train_steps: 50
+  seed: 48001
+
+output_root: experiments

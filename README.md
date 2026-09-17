@@ -94,6 +94,21 @@ in profiles, rear turns, and broad laughter. See the
 [`contact sheet`](characters/mara/benchmarks/flux2-klein-body-expression-v001/contact-sheet.png),
 and [`evaluation`](characters/mara/benchmarks/flux2-klein-body-expression-v001/evaluation.yaml).
 
+The follow-up FLUX.2 Base LoRA smoke freezes 20 identity-clean images, prepares
+the pinned Base model, precomputes its prompt, and trains 50 low-memory steps:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_flux2_lora_smoke.py `
+  --run-id mara-flux2-klein-lora-smoke-v001
+
+.\.venv\Scripts\python.exe scripts\evaluate_flux2_lora_smoke.py
+```
+
+It completed locally, produced a loadable 8.4 MB adapter, and proved that the
+12 GiB training path is viable. See the
+[`LoRA smoke decision`](docs/mara-flux2-klein-lora-smoke-v001.md) for the
+curated data, memory strategy, measurements, and next gate.
+
 ## Commands
 
 Run the tests:
@@ -338,6 +353,12 @@ realism, hands, clothing, backgrounds, gaze variety, and full-body anatomy over
 the SDXL preview. Human approval is still pending; stronger smiles show minor
 identity drift, so FLUX remains experimental until a larger pose and expression
 gate is frozen.
+
+The FLUX.2 Base LoRA feasibility run trained 50 optimizer steps in 165.33
+seconds end to end. The NF4 transformer, precomputed Qwen prompt, 512 MiB model
+shards, cached latents, and 8-bit optimizer kept observed total board usage near
+5.2 GiB. Its adapter loads and visibly changes the same-seed Base output toward
+Mara; 50 steps are intentionally insufficient for final photographic quality.
 
 The technical decision and full experiment protocol are documented in
 [`docs/mara-v0.1-technical-decision.md`](docs/mara-v0.1-technical-decision.md).
