@@ -1,0 +1,64 @@
+schema_version: 1
+evaluation_id: mara-flux2-klein-pilot-v001
+character_id: mara
+evaluated_at: 2026-09-16
+run:
+  run_id: mara-flux2-klein-everyday-v003
+  path: experiments/mara-flux2-klein-everyday-v003
+  generated_images: 10
+  manifest_sha256: a63a095abc35b313f7178241bd10d7c6d5723dc4229fd52af7829df1061166de
+  environment_sha256: bcb363d69f9804159d275599d4cbd3282c0c0e3ad5e03d2acdb7853eafc6a8fd
+model:
+  pipeline_id: black-forest-labs/FLUX.2-klein-4B
+  pipeline_revision: e7b7dc27f91deacad38e78976d1f2b499d76a294
+  fp8_transformer_id: Photoroom/FLUX.2-klein-4b-fp8-diffusers
+  fp8_transformer_revision: 408c457f3589e17a1be1dae5bf0dcaf09cd4985f
+  fp8_transformer_sha256: 13b37a5ca5cd9cf190236e7e99a3f086cf24618682f74e27a6f00cb173c308c8
+references:
+  - role: master
+    candidate: 0063
+    path: characters/mara/canonical/v001/master.png
+    sha256: 72450395ccaaafc215fae77cebae6382344503b97ae4a8f55fcfbe126ea1d8b6
+  - role: backup
+    candidate: 0055
+    path: characters/mara/canonical/v001/backup.png
+    sha256: 04a9088b6b6e5a511099be4ea95c46231d6f0c8157c89ccfeff801edaa1be45a
+settings:
+  width: 640
+  height: 832
+  steps: 4
+  guidance_scale: 1.0
+  seeds:
+    - 47001
+    - 47002
+    - 47003
+    - 47004
+    - 47005
+    - 47006
+    - 47007
+    - 47008
+    - 47009
+    - 47010
+measurements:
+  wall_seconds: 65.539
+  peak_reserved_vram_gib: 7.0645
+  deterministic_seed_47001_sha256: 9c0736aac5f675eabae613ce9e9a514b13bd37b61f326dabb33dcf1eaba98de5
+artifacts:
+  contact_sheet: contact-sheet.png
+  contact_sheet_sha256: ed8ae3e72e4a45d1160f37f2df0695be6de963de0cad1b2d7d3cd1c0645bdfbe
+review:
+  status: pending_user_review
+  integrity: pass
+  model_assisted_observations:
+    - Identity appears recognizable across all ten scenes.
+    - Downward and side gazes reduce the rigid wide-eyed look seen in the SDXL preview.
+    - Full and medium views show plausible anatomy, hands, clothing, and environments.
+    - Stronger smiles show minor identity drift and need a larger human-reviewed gate.
+next_gate:
+  recommendation: Freeze a 20-to-30-scene pose and expression benchmark before training a FLUX LoRA.
+  required_coverage:
+    - full-body standing and walking
+    - seated anatomy
+    - visible hands and object interaction
+    - profiles and three-quarter views
+    - smiles, squints, downward gaze, and closed eyes

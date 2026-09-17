@@ -45,6 +45,35 @@ The PNG is written below `experiments/<run-id>/outputs/`. The 85 MB LoRA lives
 at `characters/mara/adapters/v002/adapters/` and is intentionally excluded from
 Git; its descriptor, provenance, SHA-256, and recommended weight are versioned.
 
+## FLUX.2 Klein Pilot
+
+The isolated FLUX.2 Klein path tests a newer generator without replacing the
+stable SDXL/LoRA workflow. It conditions directly on Mara's `#0063` master and
+`#0055` backup, so this inference pilot does not train or consume a FLUX LoRA.
+
+Prepare the pinned official pipeline components, the hash-verified FP8
+transformer, and a low-memory 512 MiB re-sharding of Qwen3:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\prepare_flux2_klein_pilot.py
+```
+
+Then render the frozen ten-scene everyday matrix:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\flux2_klein_pilot.py `
+  --run-id mara-flux2-klein-everyday-v001 `
+  --limit 10
+```
+
+The FP8 checkpoint is loaded only after its pinned SHA-256 is verified. Prompt
+embeddings are cached outside Git, and every image records the model revisions,
+reference hashes, prompt, seed, timing, and output hash. See the
+[`pilot decision`](docs/mara-flux2-klein-pilot-v001.md) for the measured result
+and remaining limits, plus the frozen
+[`contact sheet`](characters/mara/benchmarks/flux2-klein-pilot-v001/contact-sheet.png)
+and [`evaluation`](characters/mara/benchmarks/flux2-klein-pilot-v001/evaluation.yaml).
+
 ## Commands
 
 Run the tests:
@@ -280,6 +309,15 @@ requested, so this is a measured improvement rather than a complete cure. See th
 v0.2 [`evaluation`](characters/mara/benchmarks/v002/evaluation.yaml),
 [`general sheet`](characters/mara/benchmarks/v002/final-contact-sheet.png), and
 [`expression sheet`](characters/mara/benchmarks/v002/expression-contact-sheet.png).
+
+The FLUX.2 Klein pilot generated 10/10 multi-reference scenes at 640 x 832 in
+65.54 seconds end to end on the same RTX 4070 SUPER, including uncached prompt
+encoding and model setup. Generation used four steps and peaked at 7.06 GiB
+reserved VRAM. Initial visual review found a clear improvement in contemporary
+realism, hands, clothing, backgrounds, gaze variety, and full-body anatomy over
+the SDXL preview. Human approval is still pending; stronger smiles show minor
+identity drift, so FLUX remains experimental until a larger pose and expression
+gate is frozen.
 
 The technical decision and full experiment protocol are documented in
 [`docs/mara-v0.1-technical-decision.md`](docs/mara-v0.1-technical-decision.md).

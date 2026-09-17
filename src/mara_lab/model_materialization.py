@@ -54,6 +54,16 @@ class MaterializationResult:
     component_results: list[ShardResult]
 
 
+@dataclass(frozen=True)
+class CheckpointReshardResult:
+    output_dir: Path
+    index_path: Path
+    manifest_path: Path
+    shards: list[Path]
+    tensor_count: int
+    total_size: int
+
+
 def read_safetensors_layout(path: Path) -> SafeTensorLayout:
     """Read and validate a safetensors header without mapping its tensor payload."""
     try:
@@ -253,6 +263,154 @@ def shard_safetensors(
         shards=shard_paths,
         tensor_count=len(layout.tensors),
         total_size=layout.payload_size,
+    )
+
+
+def _read_safetensors_index(path: Path) -> tuple[int, dict[str, str]]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ModelMaterializationError(f"cannot read safetensors index {path}: {exc}") from exc
+    if not isinstance(value, dict):
+        raise ModelMaterializationError(f"safetensors index must be an object: {path}")
+
+    metadata = value.get("metadata")
+    weight_map = value.get("weight_map")
+    total_size = metadata.get("total_size") if isinstance(metadata, dict) else None
+    if not isinstance(total_size, int) or total_size < 1:
+        raise ModelMaterializationError(f"safetensors index has invalid total_size: {path}")
+    if (
+        not isinstance(weight_map, dict)
+        or not weight_map
+        or not all(
+            isinstance(key, str) and isinstance(filename, str)
+            for key, filename in weight_map.items()
+        )
+    ):
+        raise ModelMaterializationError(f"safetensors index has invalid weight_map: {path}")
+    return total_size, weight_map
+
+
+def reshard_safetensors_checkpoint(
+    source_dir: Path,
+    output_dir: Path,
+    *,
+    max_shard_bytes: int,
+    auxiliary_files: tuple[Path, ...] = (),
+) -> CheckpointReshardResult:
+    """Re-shard an indexed safetensors checkpoint without decoding tensor payloads."""
+    source_dir = source_dir.resolve()
+    output_dir = output_dir.resolve()
+    if max_shard_bytes < 1:
+        raise ValueError("max_shard_bytes must be positive")
+    if source_dir == output_dir or source_dir in output_dir.parents:
+        raise ModelMaterializationError("re-sharded checkpoint must be outside its source")
+    if output_dir.exists():
+        raise ModelMaterializationError(f"re-sharded checkpoint already exists: {output_dir}")
+
+    source_index_path = source_dir / "model.safetensors.index.json"
+    total_size, source_weight_map = _read_safetensors_index(source_index_path)
+    source_filenames = sorted(set(source_weight_map.values()))
+    for filename in source_filenames:
+        relative = Path(filename)
+        if relative.is_absolute() or len(relative.parts) != 1 or relative.suffix != ".safetensors":
+            raise ModelMaterializationError(
+                f"safetensors index contains an unsafe shard path: {filename!r}"
+            )
+        if not (source_dir / relative).is_file():
+            raise ModelMaterializationError(f"source checkpoint shard is missing: {filename}")
+    for relative in auxiliary_files:
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ModelMaterializationError(f"unsafe auxiliary path: {relative}")
+        if not (source_dir / relative).is_file():
+            raise ModelMaterializationError(f"auxiliary checkpoint file is missing: {relative}")
+
+    output_dir.mkdir(parents=True, exist_ok=False)
+    combined_weight_map: dict[str, str] = {}
+    shards: list[Path] = []
+    source_records: list[dict[str, object]] = []
+    try:
+        for filename in source_filenames:
+            result = shard_safetensors(
+                source_dir / filename,
+                output_dir,
+                max_shard_bytes=max_shard_bytes,
+            )
+            _, generated_weight_map = _read_safetensors_index(result.index_path)
+            result.index_path.unlink()
+            for key, generated_filename in generated_weight_map.items():
+                if source_weight_map.get(key) != filename:
+                    raise ModelMaterializationError(
+                        f"source index maps tensor {key!r} to the wrong shard"
+                    )
+                if key in combined_weight_map:
+                    raise ModelMaterializationError(f"duplicate tensor in source checkpoint: {key}")
+                combined_weight_map[key] = generated_filename
+            shards.extend(result.shards)
+            source_records.append(
+                {
+                    "path": filename,
+                    "sha256": result.source_sha256,
+                    "tensor_count": result.tensor_count,
+                    "tensor_payload_bytes": result.total_size,
+                }
+            )
+
+        if set(combined_weight_map) != set(source_weight_map):
+            missing = sorted(set(source_weight_map) - set(combined_weight_map))
+            raise ModelMaterializationError(
+                f"re-sharded checkpoint is missing {len(missing)} tensor(s)"
+            )
+        actual_total_size = sum(record["tensor_payload_bytes"] for record in source_records)
+        if actual_total_size != total_size:
+            raise ModelMaterializationError(
+                "checkpoint payload size mismatch: "
+                f"expected {total_size}, found {actual_total_size}"
+            )
+
+        for relative in auxiliary_files:
+            destination = output_dir / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_dir / relative, destination)
+
+        index_path = output_dir / "model.safetensors.index.json"
+        atomic_write_json(
+            index_path,
+            {"metadata": {"total_size": total_size}, "weight_map": combined_weight_map},
+        )
+        manifest_path = output_dir / "mara-reshard.json"
+        atomic_write_json(
+            manifest_path,
+            {
+                "schema_version": 1,
+                "source_index": source_index_path.as_posix(),
+                "source_index_sha256": sha256_file(source_index_path),
+                "max_shard_bytes": max_shard_bytes,
+                "tensor_count": len(combined_weight_map),
+                "tensor_payload_bytes": total_size,
+                "source_shards": source_records,
+                "output_index_sha256": sha256_file(index_path),
+                "output_shards": [
+                    {
+                        "path": shard.name,
+                        "bytes": shard.stat().st_size,
+                        "sha256": sha256_file(shard),
+                    }
+                    for shard in shards
+                ],
+            },
+        )
+    except Exception:
+        shutil.rmtree(output_dir, ignore_errors=True)
+        raise
+
+    return CheckpointReshardResult(
+        output_dir=output_dir,
+        index_path=index_path,
+        manifest_path=manifest_path,
+        shards=shards,
+        tensor_count=len(combined_weight_map),
+        total_size=total_size,
     )
 
 
