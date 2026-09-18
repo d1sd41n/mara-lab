@@ -1,0 +1,87 @@
+schema_version: 1
+benchmark_id: mara-flux2-klein-lora-candidate-v001
+character_id: mara
+
+model:
+  id: black-forest-labs/FLUX.2-klein-base-4B
+  revision: a3b4f4849157f664bdbc776fd7453c2783562f4d
+  transformer_sha256: e109674697ffa1a3983126e32512f5428a9442bd8df59f9c95566ee90a473bb6
+
+training:
+  config: configs/training/mara-flux2-klein-lora-candidate-v001.yaml
+  images: 20
+  prompt_mode: per_image
+  prompt_cache_sha256: 7bb56102fbd775192ca1ad3366632ad9fac0ad9e690fffb46fd9d4b499503e09
+  optimizer_steps: 600
+  checkpointing_steps: 200
+  wall_seconds: 1764.993
+  observed_board_memory_mib: 5204
+  trainer_revision: a3608b512ed7248499a44c61d954965ed9bdae4d
+  checkpoints:
+    - step: 200
+      adapter_sha256: 065b0790f605055afad99686eb31078b6f0b8f4bc32f761246b514ef95a12c41
+    - step: 400
+      adapter_sha256: 697526d3dbd7717c8f06e53744f5ecbe9cdd34b00b6c133a741b521476e24cf5
+    - step: 600
+      adapter_sha256: 69603ef4ec299b43a2a37ed82c43e991c68bca774a3d5fbc2dcbbdd6b0eb0723
+
+evaluation:
+  prompt_source: canonical-0063.png caption
+  width: 384
+  height: 512
+  inference_steps: 20
+  guidance_scale: 4.0
+  identity_method:
+    model: buffalo_l
+    provider: CPUExecutionProvider
+    metric: cosine similarity to the normalized centroid of canonical 0063 and 0055
+    interpretation: supporting measurement only; no calibrated pass threshold
+  reference_pair_cosine: 0.393380
+  seeds:
+    - seed: 49002
+      step_200: 0.240409
+      step_400: 0.284280
+      step_600: 0.362937
+    - seed: 49003
+      step_200: 0.252802
+      step_400: 0.232743
+      step_600: 0.323974
+    - seed: 49004
+      step_200: 0.198968
+      step_400: 0.340030
+      step_600: 0.348554
+  aggregate:
+    - step: 200
+      mean: 0.230726
+      population_stddev: 0.023019
+      minimum: 0.198968
+      maximum: 0.252802
+    - step: 400
+      mean: 0.285684
+      population_stddev: 0.043811
+      minimum: 0.232743
+      maximum: 0.340030
+    - step: 600
+      mean: 0.345155
+      population_stddev: 0.016087
+      minimum: 0.323974
+      maximum: 0.362937
+
+selection:
+  checkpoint_step: 600
+  adapter_sha256: 69603ef4ec299b43a2a37ed82c43e991c68bca774a3d5fbc2dcbbdd6b0eb0723
+  reason: highest identity cosine in all three seeds and highest aggregate mean
+  status: selected_for_body_expression_gate
+
+contact_sheets:
+  - path: comparison-seed-49002.png
+    sha256: 79e3d79a03b3629824267cfd3497d39f3115323b9d060f3289a424eafa80a2da
+  - path: comparison-seed-49003.png
+    sha256: 3b0783229686dd45aa69902ad3b501e7e86c5de9fc7156d2948ed3fbecd93461
+  - path: comparison-seed-49004.png
+    sha256: 04f47c52c20cb345fec8d49eb6f5675f945a3fcade72051687aae344a350ad02
+
+limitations:
+  - The checkpoint comparison covers one neutral close-portrait prompt, not body or expression range.
+  - Outputs remain more polished and illustration-like than the canonical photographs.
+  - InsightFace is a supporting diagnostic and its distributed weights are research-only.

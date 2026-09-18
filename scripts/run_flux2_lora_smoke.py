@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 
-from mara_lab.artifacts import atomic_write_json, sha256_file
+from mara_lab.artifacts import atomic_write_json, read_jsonl, sha256_file
 from mara_lab.flux2_lora import (
     flux2_training_command,
     load_flux2_lora_config,
@@ -27,16 +27,49 @@ def utc_now() -> str:
 
 def cache_prompt_embeddings(config_path: Path, repository_root: Path) -> Path:
     config = load_flux2_lora_config(config_path)
+    dataset = materialize_flux2_lora_dataset(config, repository_root)
     settings = config.prompt_cache
     output_path = (repository_root / settings.output_path).resolve()
     metadata_path = output_path.with_suffix(".json")
-    expected_metadata = {
-        "schema_version": 1,
-        "prompt": config.dataset.instance_prompt,
-        "max_sequence_length": settings.max_sequence_length,
-        "text_encoder_out_layers": settings.text_encoder_out_layers,
-        "text_encoder_root": settings.text_encoder_root.as_posix(),
-    }
+    if settings.mode == "single":
+        prompts = [config.dataset.instance_prompt]
+        image_filenames: list[str] = []
+        expected_metadata = {
+            "schema_version": 1,
+            "prompt": config.dataset.instance_prompt,
+            "max_sequence_length": settings.max_sequence_length,
+            "text_encoder_out_layers": settings.text_encoder_out_layers,
+            "text_encoder_root": settings.text_encoder_root.as_posix(),
+        }
+    else:
+        records = sorted(
+            read_jsonl(dataset.manifest_path),
+            key=lambda record: Path(record["image_path"]).name,
+        )
+        image_filenames = [Path(record["image_path"]).name for record in records]
+        prompts = [
+            (dataset.root / record["caption_path"]).read_text(encoding="utf-8").strip()
+            for record in records
+        ]
+        if len(prompts) != dataset.count:
+            raise ValueError("per-image prompt count does not match the dataset")
+        if any(config.dataset.trigger_token not in prompt for prompt in prompts):
+            raise ValueError("a per-image prompt is missing the trigger token")
+        expected_metadata = {
+            "schema_version": 1,
+            "mode": settings.mode,
+            "dataset_manifest_sha256": sha256_file(dataset.manifest_path),
+            "items": [
+                {
+                    "caption_sha256": record["caption_sha256"],
+                    "image_filename": Path(record["image_path"]).name,
+                }
+                for record in records
+            ],
+            "max_sequence_length": settings.max_sequence_length,
+            "text_encoder_out_layers": settings.text_encoder_out_layers,
+            "text_encoder_root": settings.text_encoder_root.as_posix(),
+        }
     if output_path.is_file() and metadata_path.is_file():
         found = json.loads(metadata_path.read_text(encoding="utf-8"))
         expected_with_hash = {**expected_metadata, "sha256": sha256_file(output_path)}
@@ -62,7 +95,10 @@ def cache_prompt_embeddings(config_path: Path, repository_root: Path) -> Path:
         bnb_4bit_use_double_quant=True,
         bnb_4bit_compute_dtype=torch.bfloat16,
     )
-    print("Loading the 4-bit Qwen text encoder for one prompt...", flush=True)
+    print(
+        f"Loading the 4-bit Qwen text encoder for {len(prompts)} prompt(s)...",
+        flush=True,
+    )
     text_encoder = Qwen3ForCausalLM.from_pretrained(
         text_encoder_root,
         dtype=torch.bfloat16,
@@ -83,20 +119,31 @@ def cache_prompt_embeddings(config_path: Path, repository_root: Path) -> Path:
         local_files_only=True,
     )
     try:
-        with torch.inference_mode():
-            prompt_embeds, text_ids = pipeline.encode_prompt(
-                prompt=config.dataset.instance_prompt,
-                device=torch.device("cuda"),
-                max_sequence_length=settings.max_sequence_length,
-                text_encoder_out_layers=tuple(settings.text_encoder_out_layers),
-            )
+        prompt_embeds_parts = []
+        text_ids_parts = []
+        for index, prompt in enumerate(prompts, start=1):
+            print(f"Encoding prompt {index}/{len(prompts)}...", flush=True)
+            with torch.inference_mode():
+                prompt_embeds, text_ids = pipeline.encode_prompt(
+                    prompt=prompt,
+                    device=torch.device("cuda"),
+                    max_sequence_length=settings.max_sequence_length,
+                    text_encoder_out_layers=tuple(settings.text_encoder_out_layers),
+                )
+            prompt_embeds_parts.append(prompt_embeds.cpu())
+            text_ids_parts.append(text_ids.cpu())
         payload = {
-            "prompt": config.dataset.instance_prompt,
+            "mode": settings.mode,
             "max_sequence_length": settings.max_sequence_length,
             "text_encoder_out_layers": settings.text_encoder_out_layers,
-            "prompt_embeds": prompt_embeds.cpu(),
-            "text_ids": text_ids.cpu(),
+            "prompt_embeds": torch.cat(prompt_embeds_parts, dim=0),
+            "text_ids": torch.cat(text_ids_parts, dim=0),
         }
+        if settings.mode == "single":
+            payload["prompt"] = prompts[0]
+        else:
+            payload["captions"] = prompts
+            payload["image_filenames"] = image_filenames
         output_path.parent.mkdir(parents=True, exist_ok=True)
         temporary = output_path.with_suffix(".tmp")
         torch.save(payload, temporary)

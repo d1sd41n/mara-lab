@@ -109,6 +109,23 @@ It completed locally, produced a loadable 8.4 MB adapter, and proved that the
 [`LoRA smoke decision`](docs/mara-flux2-klein-lora-smoke-v001.md) for the
 curated data, memory strategy, measurements, and next gate.
 
+The real candidate uses the same 20 images with per-image captions, trains 600
+steps, and saves checkpoints at 200, 400, and 600:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_flux2_lora_smoke.py `
+  --config configs\training\mara-flux2-klein-lora-candidate-v001.yaml `
+  --run-id mara-flux2-klein-lora-candidate-v001
+
+.\.venv\Scripts\python.exe scripts\evaluate_flux2_lora_checkpoints.py
+```
+
+Three same-prompt, frozen-seed comparisons select step 600. It wins the
+supporting facial-similarity measurement in all three seeds, but still needs
+the body-and-expression gate before promotion. See the
+[`candidate decision`](docs/mara-flux2-klein-lora-candidate-v001.md) and its
+[`frozen evaluation`](characters/mara/benchmarks/flux2-klein-lora-candidate-v001/evaluation.yaml).
+
 ## Commands
 
 Run the tests:

@@ -8,7 +8,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -72,6 +72,7 @@ class ModelSettings(BaseModel):
 class PromptCacheSettings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    mode: Literal["single", "per_image"] = "single"
     output_path: Path
     text_encoder_root: Path
     max_sequence_length: int = Field(gt=0)
@@ -95,6 +96,8 @@ class TrainerSettings(BaseModel):
     rank: int = Field(gt=0)
     lora_alpha: int = Field(gt=0)
     max_train_steps: int = Field(gt=0)
+    checkpointing_steps: int | None = Field(default=None, gt=0)
+    checkpoints_total_limit: int | None = Field(default=None, gt=0)
     seed: int
 
 
@@ -386,6 +389,23 @@ def _replace_once(source: str, old: str, new: str, label: str) -> str:
 def patch_flux2_trainer_source(source: str) -> str:
     source = _replace_once(
         source,
+        """            instance_images = [Image.open(path) for path in list(Path(instance_data_root).iterdir())]
+            self.custom_instance_prompts = None
+""",
+        """            instance_image_paths = sorted(
+                (path for path in Path(instance_data_root).iterdir() if path.is_file()),
+                key=lambda path: path.name,
+            )
+            instance_images = [Image.open(path) for path in instance_image_paths]
+            self.instance_image_filenames = [
+                path.name for path in instance_image_paths for _ in range(repeats)
+            ]
+            self.custom_instance_prompts = None
+""",
+        "stable local image order",
+    )
+    source = _replace_once(
+        source,
         "        log_with=args.report_to,\n",
         '        log_with=None if args.report_to == "none" else args.report_to,\n',
         "disabled logging",
@@ -511,12 +531,14 @@ def patch_flux2_trainer_source(source: str) -> str:
                 args.instance_prompt, text_encoding_pipeline
             )
 """,
-        """    if args.precomputed_prompt_embeddings is not None:
+        """    using_precomputed_per_image_prompts = False
+    precomputed_prompt_embeds = None
+    precomputed_text_ids = None
+    if args.precomputed_prompt_embeddings is not None:
         cached_prompt = torch.load(
             args.precomputed_prompt_embeddings, map_location="cpu", weights_only=True
         )
         required_cache_keys = {
-            "prompt",
             "max_sequence_length",
             "text_encoder_out_layers",
             "prompt_embeds",
@@ -525,16 +547,46 @@ def patch_flux2_trainer_source(source: str) -> str:
         missing_cache_keys = required_cache_keys - cached_prompt.keys()
         if missing_cache_keys:
             raise ValueError(f"Prompt cache is missing keys: {sorted(missing_cache_keys)}")
-        if cached_prompt["prompt"] != args.instance_prompt:
-            raise ValueError("Prompt cache does not match --instance_prompt.")
         if cached_prompt["max_sequence_length"] != args.max_sequence_length:
             raise ValueError("Prompt cache max sequence length does not match the trainer.")
         if cached_prompt["text_encoder_out_layers"] != args.text_encoder_out_layers:
             raise ValueError("Prompt cache text encoder layers do not match the trainer.")
-        instance_prompt_hidden_states = cached_prompt["prompt_embeds"].to(
-            device=accelerator.device, dtype=weight_dtype
-        )
-        instance_text_ids = cached_prompt["text_ids"].to(device=accelerator.device)
+        cache_mode = cached_prompt.get("mode", "single")
+        if cache_mode == "single":
+            if "prompt" not in cached_prompt:
+                raise ValueError("Single-prompt cache is missing its prompt.")
+            if cached_prompt["prompt"] != args.instance_prompt:
+                raise ValueError("Prompt cache does not match --instance_prompt.")
+            instance_prompt_hidden_states = cached_prompt["prompt_embeds"].to(
+                device=accelerator.device, dtype=weight_dtype
+            )
+            instance_text_ids = cached_prompt["text_ids"].to(device=accelerator.device)
+        elif cache_mode == "per_image":
+            required_per_image_keys = {"captions", "image_filenames"}
+            missing_per_image_keys = required_per_image_keys - cached_prompt.keys()
+            if missing_per_image_keys:
+                raise ValueError(
+                    f"Per-image prompt cache is missing keys: {sorted(missing_per_image_keys)}"
+                )
+            expected_filenames = train_dataset.instance_image_filenames
+            if cached_prompt["image_filenames"] != expected_filenames:
+                raise ValueError("Per-image prompt cache does not match the dataset filenames.")
+            captions = cached_prompt["captions"]
+            if len(captions) != train_dataset.num_instance_images:
+                raise ValueError("Per-image prompt cache caption count does not match the dataset.")
+            if cached_prompt["prompt_embeds"].shape[0] != train_dataset.num_instance_images:
+                raise ValueError("Per-image prompt embedding count does not match the dataset.")
+            if cached_prompt["text_ids"].shape[0] != train_dataset.num_instance_images:
+                raise ValueError("Per-image text ID count does not match the dataset.")
+            train_dataset.custom_instance_prompts = captions
+            precomputed_prompt_embeds = cached_prompt["prompt_embeds"].to(
+                device=accelerator.device, dtype=weight_dtype
+            )
+            precomputed_text_ids = cached_prompt["text_ids"].to(device=accelerator.device)
+            using_precomputed_per_image_prompts = True
+            precompute_latents = True
+        else:
+            raise ValueError(f"Unsupported prompt cache mode: {cache_mode}")
         del cached_prompt
 
     # If no type of tuning is done on the text_encoder and custom instance prompts are NOT
@@ -547,6 +599,39 @@ def patch_flux2_trainer_source(source: str) -> str:
             )
 """,
         "prompt cache",
+    )
+    source = _replace_once(
+        source,
+        """    if train_dataset.custom_instance_prompts:
+        prompt_embeds_cache = [None] * train_dataset.num_instance_images
+        text_ids_cache = [None] * train_dataset.num_instance_images
+""",
+        """    if train_dataset.custom_instance_prompts:
+        if using_precomputed_per_image_prompts:
+            prompt_embeds_cache = [
+                precomputed_prompt_embeds[index : index + 1]
+                for index in range(train_dataset.num_instance_images)
+            ]
+            text_ids_cache = [
+                precomputed_text_ids[index : index + 1]
+                for index in range(train_dataset.num_instance_images)
+            ]
+            del precomputed_prompt_embeds, precomputed_text_ids
+        else:
+            prompt_embeds_cache = [None] * train_dataset.num_instance_images
+            text_ids_cache = [None] * train_dataset.num_instance_images
+""",
+        "per-image prompt cache initialization",
+    )
+    source = _replace_once(
+        source,
+        """                if train_dataset.custom_instance_prompts:
+                    if args.fsdp_text_encoder:
+""",
+        """                if train_dataset.custom_instance_prompts and not using_precomputed_per_image_prompts:
+                    if args.fsdp_text_encoder:
+""",
+        "skip cached per-image prompt encoding",
     )
     source = _replace_once(
         source,
@@ -631,7 +716,7 @@ def flux2_training_command(
     settings = config.trainer
     prompt_settings = config.prompt_cache
     steps = max_train_steps or settings.max_train_steps
-    return [
+    command = [
         str(python_executable.resolve()),
         str(trainer_path.resolve()),
         "--pretrained_model_name_or_path",
@@ -675,7 +760,7 @@ def flux2_training_command(
         "--lr_warmup_steps",
         "0",
         "--checkpointing_steps",
-        str(steps + 1),
+        str(settings.checkpointing_steps or steps + 1),
         "--report_to",
         "none",
         "--gradient_checkpointing",
@@ -684,3 +769,8 @@ def flux2_training_command(
         "--offload",
         "--skip_final_inference",
     ]
+    if settings.checkpoints_total_limit is not None:
+        command.extend(
+            ["--checkpoints_total_limit", str(settings.checkpoints_total_limit)]
+        )
+    return command

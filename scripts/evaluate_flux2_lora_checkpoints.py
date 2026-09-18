@@ -1,0 +1,238 @@
+from __future__ import annotations
+
+import argparse
+import json
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+import torch
+from diffusers import (
+    AutoencoderKLFlux2,
+    FlowMatchEulerDiscreteScheduler,
+    Flux2KleinPipeline,
+    Flux2Transformer2DModel,
+)
+from PIL import Image
+from transformers import BitsAndBytesConfig
+
+from mara_lab.artifacts import atomic_write_json, atomic_write_text, save_png_atomic, sha256_file
+from mara_lab.contact_sheet import create_contact_sheet
+from mara_lab.flux2_lora import load_flux2_lora_config
+
+
+@dataclass(frozen=True)
+class ComparisonRecord:
+    artifact_id: str
+    sequence: int
+    seed: int
+    width: int
+    height: int
+    image_path: str
+    checkpoint_step: int | None
+    wall_seconds: float
+    sha256: str
+
+
+def run(args: argparse.Namespace) -> Path:
+    if not torch.cuda.is_available():
+        raise RuntimeError("FLUX.2 LoRA checkpoint evaluation requires CUDA")
+    repository_root = args.repository_root.resolve()
+    config = load_flux2_lora_config(args.config.resolve())
+    model_root = (repository_root / config.model.output_root).resolve()
+    prompt_cache_path = (repository_root / config.prompt_cache.output_path).resolve()
+    run_root = (repository_root / config.output_root / args.run_id).resolve()
+    output_dir = run_root / args.evaluation_id
+    if output_dir.exists():
+        raise FileExistsError(f"evaluation already exists: {output_dir}")
+    outputs_dir = output_dir / "outputs"
+    outputs_dir.mkdir(parents=True)
+
+    checkpoint_adapters = {
+        step: run_root / f"checkpoint-{step}" / "pytorch_lora_weights.safetensors"
+        for step in args.checkpoints
+    }
+    missing = [str(path) for path in checkpoint_adapters.values() if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"missing checkpoint adapters: {', '.join(missing)}")
+
+    prompt_cache = torch.load(prompt_cache_path, map_location="cpu", weights_only=True)
+    if prompt_cache.get("mode") != "per_image":
+        raise ValueError("checkpoint comparison requires a per-image prompt cache")
+    try:
+        prompt_index = prompt_cache["image_filenames"].index(args.reference_filename)
+    except ValueError as error:
+        raise ValueError(
+            f"reference filename is absent from prompt cache: {args.reference_filename}"
+        ) from error
+    prompt = prompt_cache["captions"][prompt_index]
+    prompt_embeds = prompt_cache["prompt_embeds"][prompt_index : prompt_index + 1].to(
+        device="cuda", dtype=torch.bfloat16
+    )
+
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_compute_dtype=torch.bfloat16,
+    )
+    print("Loading the 4-bit FLUX.2 Klein Base transformer...", flush=True)
+    transformer = Flux2Transformer2DModel.from_pretrained(
+        model_root,
+        subfolder="transformer",
+        quantization_config=quantization_config,
+        torch_dtype=torch.bfloat16,
+        device_map={"": 0},
+        local_files_only=True,
+    )
+    vae = AutoencoderKLFlux2.from_pretrained(
+        model_root,
+        subfolder="vae",
+        torch_dtype=torch.bfloat16,
+        device_map={"": 0},
+        local_files_only=True,
+    )
+    scheduler = FlowMatchEulerDiscreteScheduler.from_pretrained(
+        model_root, subfolder="scheduler", local_files_only=True
+    )
+    pipe = Flux2KleinPipeline(
+        scheduler=scheduler,
+        vae=vae,
+        transformer=transformer,
+        text_encoder=None,
+        tokenizer=None,
+        is_distilled=False,
+    )
+    pipe.vae.enable_tiling()
+
+    adapter_names: dict[int, str] = {}
+    for step, adapter_path in checkpoint_adapters.items():
+        adapter_name = f"step_{step}"
+        pipe.load_lora_weights(adapter_path.parent, adapter_name=adapter_name)
+        adapter_names[step] = adapter_name
+
+    canonical_source = repository_root / "characters/mara/canonical/v001/master.png"
+    canonical_destination = outputs_dir / "canonical-0063.png"
+    with Image.open(canonical_source) as opened:
+        canonical = opened.convert("RGB")
+        save_png_atomic(canonical, canonical_destination)
+    records = [
+        ComparisonRecord(
+            artifact_id="canonical-0063",
+            sequence=1,
+            seed=args.seed,
+            width=canonical.width,
+            height=canonical.height,
+            image_path=canonical_destination.relative_to(output_dir).as_posix(),
+            checkpoint_step=None,
+            wall_seconds=0.0,
+            sha256=sha256_file(canonical_destination),
+        )
+    ]
+
+    generated_manifest: list[dict[str, object]] = []
+    for sequence, step in enumerate(args.checkpoints, start=2):
+        pipe.set_adapters(adapter_names[step])
+        generator = torch.Generator(device="cuda").manual_seed(args.seed)
+        artifact_id = f"lora-step-{step}"
+        print(f"Generating {artifact_id}...", flush=True)
+        started = time.perf_counter()
+        with torch.inference_mode():
+            image = pipe(
+                prompt=None,
+                prompt_embeds=prompt_embeds,
+                negative_prompt_embeds=torch.zeros_like(prompt_embeds),
+                height=args.height,
+                width=args.width,
+                num_inference_steps=args.steps,
+                guidance_scale=args.guidance_scale,
+                generator=generator,
+                max_sequence_length=config.prompt_cache.max_sequence_length,
+            ).images[0]
+        wall_seconds = time.perf_counter() - started
+        destination = outputs_dir / f"{artifact_id}-seed-{args.seed}.png"
+        save_png_atomic(image, destination)
+        relative_path = destination.relative_to(output_dir).as_posix()
+        record = ComparisonRecord(
+            artifact_id=artifact_id,
+            sequence=sequence,
+            seed=args.seed,
+            width=image.width,
+            height=image.height,
+            image_path=relative_path,
+            checkpoint_step=step,
+            wall_seconds=round(wall_seconds, 3),
+            sha256=sha256_file(destination),
+        )
+        records.append(record)
+        generated_manifest.append(asdict(record))
+        del image
+        torch.cuda.empty_cache()
+
+    manifest_path = outputs_dir / "manifest.jsonl"
+    atomic_write_text(
+        manifest_path,
+        "".join(json.dumps(record, sort_keys=True) + "\n" for record in generated_manifest),
+    )
+    sheet_path = output_dir / "comparison.png"
+    create_contact_sheet(
+        output_dir,
+        records,
+        sheet_path,
+        columns=4,
+        thumbnail_width=256,
+        labeler=lambda record: (
+            "Canonica #0063"
+            if record.checkpoint_step is None
+            else f"LoRA, {record.checkpoint_step} pasos"
+        ),
+    )
+    atomic_write_json(
+        output_dir / "evaluation.json",
+        {
+            "schema_version": 1,
+            "adapter_sha256_by_step": {
+                str(step): sha256_file(path) for step, path in checkpoint_adapters.items()
+            },
+            "guidance_scale": args.guidance_scale,
+            "height": args.height,
+            "manifest_sha256": sha256_file(manifest_path),
+            "model_id": config.model.model_id,
+            "model_revision": config.model.revision,
+            "peak_reserved_vram_gib": round(torch.cuda.max_memory_reserved() / 1024**3, 4),
+            "prompt": prompt,
+            "records": [asdict(record) for record in records],
+            "reference_filename": args.reference_filename,
+            "seed": args.seed,
+            "steps": args.steps,
+            "width": args.width,
+        },
+    )
+    print(f"Checkpoint comparison: {sheet_path}", flush=True)
+    return sheet_path
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Compare Mara LoRA checkpoints against canonical #0063."
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=Path("configs/training/mara-flux2-klein-lora-candidate-v001.yaml"),
+    )
+    parser.add_argument("--repository-root", type=Path, default=Path.cwd())
+    parser.add_argument("--run-id", default="mara-flux2-klein-lora-candidate-v001")
+    parser.add_argument("--evaluation-id", default="checkpoint-comparison-v001")
+    parser.add_argument("--checkpoints", type=int, nargs="+", default=[200, 400, 600])
+    parser.add_argument("--reference-filename", default="canonical-0063.png")
+    parser.add_argument("--seed", type=int, default=49002)
+    parser.add_argument("--width", type=int, default=384)
+    parser.add_argument("--height", type=int, default=512)
+    parser.add_argument("--steps", type=int, default=20)
+    parser.add_argument("--guidance-scale", type=float, default=4.0)
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    run(parse_args())
